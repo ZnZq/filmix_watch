@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:connectivity/connectivity.dart';
+import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/filmix/result.dart';
 import 'package:http/http.dart' as http;
 import 'enums.dart';
@@ -51,7 +52,7 @@ class Filter {
       var response = await http.post(
         'https://filmix.co/engine/ajax/get_filter.php',
         body: {'scope': 'cat', 'type': filterType.text},
-        headers: {'x-requested-with': 'XMLHttpRequest'},
+        headers: Filmix.getHeader(),
       );
 
       if (response.statusCode == 200) {

@@ -1,5 +1,6 @@
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
+import 'package:filmix_watch/tiles/auth_tile.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -14,23 +15,30 @@ class AppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<AppDrawer> {
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildDrawerHeader(),
-            _buildDrawerItemReplacePush(
-                icon: Icons.home, text: MainPage.title, route: MainPage.route),
-            Divider(height: 0),
-            _buildDrawerItem(icon: Icons.star_border, text: 'Избранное'),
-            Divider(height: 0),
-            _buildDrawerItemPush(
-                icon: Icons.filter_drama,
-                text: DataPage.title,
-                route: DataPage.route),
-            Divider(height: 0),
-          ],
+    return SafeArea(
+      child: Drawer(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Divider(height: 8),
+              AuthTile(),
+              Divider(height: 16),
+              // _buildDrawerHeader(),
+              _buildDrawerItemReplacePush(
+                  icon: Icons.home,
+                  text: MainPage.title,
+                  route: MainPage.route),
+              Divider(height: 0),
+              _buildDrawerItem(icon: Icons.star_border, text: 'Избранное'),
+              Divider(height: 0),
+              _buildDrawerItemPush(
+                  icon: Icons.filter_drama,
+                  text: DataPage.title,
+                  route: DataPage.route),
+              Divider(height: 0),
+            ],
+          ),
         ),
       ),
     );
@@ -84,9 +92,7 @@ class _AppDrawerState extends State<AppDrawer> {
     return DrawerHeader(
       margin: EdgeInsets.zero,
       padding: EdgeInsets.zero,
-      child: Stack(
-        children: [],
-      ),
+      child: AuthTile(),
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:filmix_watch/bloc/latest_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:flutter/material.dart';

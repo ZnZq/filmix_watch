@@ -2,7 +2,6 @@ import 'package:filmix_watch/bloc/search_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/tiles/search_post_tile.dart';
-import 'package:filmix_watch/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 class SearchPage extends StatefulWidget {

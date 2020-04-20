@@ -8,6 +8,8 @@ import 'package:filmix_watch/filmix/media/translation.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/poster.dart';
 import 'package:filmix_watch/filmix/result.dart';
+import 'package:filmix_watch/filmix/user_data.dart';
+import 'package:hive/hive.dart';
 import 'package:html/dom.dart';
 
 import 'enums.dart';
@@ -31,6 +33,110 @@ class Filmix {
     category:       filmy/c11-c18-c22-c28-c112
     requested_url:  filmy/c11-c18-c22-c28-c112
   */
+
+  static Map<String, String> getHeader(
+      {int per_page_news = 60, Map<String, String> cookie = const {}}) {
+    return {
+      'x-requested-with': 'XMLHttpRequest',
+      'cookie': {
+        'dle_user_id': user?.id ?? '',
+        'dle_password': user?.password ?? '',
+        'per_page_news': per_page_news.toString(),
+        ...cookie
+      }.entries.map((e) => '${e.key}=${e.value}').join('; ')
+    };
+  }
+
+  static UserData _user;
+  static UserData get user => _user;
+
+  static logout() {
+    var box = Hive.box('filmix');
+    box.put('user_id', '');
+    box.put('password', '');
+    _user = null;
+  }
+
+  static Future<String> auth(String login, String password) async {
+    try {
+      var response = await http.post(
+        'https://filmix.co/engine/ajax/user_auth.php',
+        body: {
+          'login_name': login,
+          'login_password': password,
+          'login': 'submit',
+        },
+        headers: {'x-requested-with': 'XMLHttpRequest'},
+      );
+
+      if (response.body != 'AUTHORIZED') {
+        return response.body;
+      }
+
+      var regexCookie =
+          RegExp(r'dle_user_id=(?<user_id>\d+).*dle_password=(?<password>\w+)');
+
+      var m = regexCookie.firstMatch(response.headers['set-cookie']);
+
+      if (m == null) {
+        return 'INVALID COOKIE';
+      }
+
+      var userId = m.namedGroup('user_id');
+      var pass = m.namedGroup('password');
+
+      var box = Hive.box('filmix');
+      box.put('user_id', userId);
+      box.put('password', pass);
+
+      var hasData = await getUser(userId, pass);
+      if (hasData)
+        return 'AUTHORIZED';
+      else
+        return 'FAIL LOAD USER DATA';
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  static Future<bool> getUser(String userId, String password) async {
+    try {
+      var response = await http.get(
+        'https://filmix.co/my_news',
+        headers: {'cookie': 'dle_user_id=$userId; dle_password=$password'},
+      );
+
+      if (response.statusCode != 200) {
+        _user = null;
+        return false;
+      }
+
+      var document = html.parse(response.body);
+      var header = document.getElementById('header');
+      var login = header.querySelector('.login');
+      if (login.classes.contains('guest')) {
+        _user = null;
+        return false;
+      }
+
+      var avatar = login.querySelector('.avatar').attributes['src'];
+
+      _user = UserData(
+        id: userId,
+        password: password,
+        name: login.querySelector('.user-name').text.trim(),
+        avatar: avatar == '/templates/Filmix/dleimages/noavatar.png'
+            ? 'https://filmix.co$avatar'
+            : avatar,
+        profie: login.querySelector('.user-profile').attributes['href'],
+      );
+      return true;
+    } catch (e) {
+      _user = null;
+      return true;
+    }
+  }
+
   static String _genArgs(int page, Filter filter) {
     return {
       'do': 'cat',
@@ -57,9 +163,7 @@ class Filmix {
 
       var response = await http.get(
         'https://filmix.co/api/v2/suggestions?search_word=${Uri.encodeFull(text.replaceAll(' ', '+'))}',
-        headers: {
-          'x-requested-with': 'XMLHttpRequest',
-        },
+        headers: getHeader(),
       );
 
       if (response.statusCode != 200) {
@@ -96,18 +200,18 @@ class Filmix {
     }
   }
 
-  static String _latestType(LatestType type) {
+  static Map<String, String> _latestType(LatestType type) {
     switch (type) {
       case LatestType.movie:
-        return '; main_page_cat=0';
+        return {'main_page_cat': '0'};
       case LatestType.serial:
-        return '; main_page_cat=7';
+        return {'main_page_cat': '7'};
       case LatestType.multmovies:
-        return '; main_page_cat=14';
+        return {'main_page_cat': '14'};
       case LatestType.multserials:
-        return '; main_page_cat=93';
+        return {'main_page_cat': '93'};
       default:
-        return '';
+        return {};
     }
   }
 
@@ -159,11 +263,7 @@ class Filmix {
 
       var response = await http.get(
         'https://filmix.co/${page > 1 ? 'page/$page/' : ''}',
-        headers: {
-          'x-requested-with': 'XMLHttpRequest',
-          'cookie':
-              'FILMIXNET=${randomString(26)}; per_page_news=60${_latestType(type)}'
-        },
+        headers: getHeader(cookie: _latestType(type)),
       );
 
       if (response.statusCode != 200) {
@@ -215,10 +315,7 @@ class Filmix {
           'set_new_sort': 'dle_sort_cat',
           'set_direction_sort': 'dle_direction_cat',
         },
-        headers: {
-          'x-requested-with': 'XMLHttpRequest',
-          'cookie': 'FILMIXNET=${randomString(26)}; per_page_news=$size'
-        },
+        headers: getHeader(per_page_news: size),
       );
 
       if (response.statusCode != 200) {
@@ -355,10 +452,7 @@ class Filmix {
       var response = await http.post(
         'https://filmix.co/api/movies/player_data',
         body: {'post_id': '$id', 'showfull': 'true'},
-        headers: {
-          'x-requested-with': 'XMLHttpRequest',
-          'cookie': 'FILMIXNET=${randomString(26)}'
-        },
+        headers: getHeader(),
       );
 
       if (response.statusCode != 200) {
@@ -428,7 +522,8 @@ class Filmix {
           await sendReceive(sendPort, data.data) as List;
 
       if (movieTranslationsList.isEmpty) {
-        return Result.data([MovieTranslation(name: 'Заблокировано', qualities: {})]);
+        return Result.data(
+            [MovieTranslation(name: 'Заблокировано', qualities: {})]);
       }
 
       var movieTranslations = movieTranslationsList
@@ -523,7 +618,8 @@ class Filmix {
           await sendReceive(sendPort, data.data) as List;
 
       if (serialTranslationsList.isEmpty) {
-        return Result.data([SerialTranslation(name: 'Заблокировано', seasons: [])]);
+        return Result.data(
+            [SerialTranslation(name: 'Заблокировано', seasons: [])]);
       }
 
       var serialTranslations = serialTranslationsList

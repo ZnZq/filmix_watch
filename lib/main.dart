@@ -1,5 +1,7 @@
+import 'package:filmix_watch/bloc/auth_manager.dart';
 import 'package:filmix_watch/bloc/filter_manager.dart';
 import 'package:filmix_watch/bloc/theme_bloc.dart';
+import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/post_page.dart';
@@ -20,6 +22,7 @@ void main() async {
       future: Hive.openBox('filmix'),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          AuthManager.init();
           FilterManager.init();
           return App();
         }
@@ -54,6 +57,7 @@ class App extends StatelessWidget {
             DataPage.route: (_) => DataPage(),
             SearchPage.route: (_) => SearchPage(),
             PostPage.route: (_) => PostPage(),
+            AuthPage.route: (_) => AuthPage(),
           },
         );
       },

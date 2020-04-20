@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Result<T> {
   final T data;
   final String error;
