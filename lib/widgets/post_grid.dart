@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:filmix_watch/bloc/latest_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/pages/post_page.dart';
@@ -32,6 +35,36 @@ class PostGridState extends State<PostGrid>
     );
 
     scrollController = ScrollController();
+
+    scrollController.addListener(scrollListener);
+  }
+
+  Timer timer;
+  double h = (275 + 8.0);
+  bool isScrool = false;
+
+  scrollListener() {
+    if (isScrool) return;
+    timer?.cancel();
+    timer = Timer(Duration(milliseconds: 500), normalize);
+  }
+
+  normalize() {
+    isScrool = true;
+    print('normalize ${DateTime.now()}');
+    if (scrollController.positions.isNotEmpty) {
+      var indexLast = (scrollController.position.pixels * lastCount / h).ceil();
+      int firstLast = (indexLast - indexLast.floor() % lastCount);
+      var row = (firstLast / count);
+
+      var newPos = max(0.0, row * h);
+      scrollController.animateTo(
+        newPos,
+        duration: Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+    isScrool = false;
   }
 
   void _onRefresh() {
@@ -44,7 +77,8 @@ class PostGridState extends State<PostGrid>
         .then((_) => _refreshController.loadComplete());
   }
 
-  var lastCount = 2;
+  var count = 0;
+  var lastCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -52,37 +86,49 @@ class PostGridState extends State<PostGrid>
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        var count = constraints.maxWidth > constraints.maxHeight ? 3 : 2;
+        count = constraints.maxWidth > constraints.maxHeight ? 3 : 2;
 
-        // if (scrollController.positions.isNotEmpty) {
-        //   print('${widget.latestType} - pos: ${scrollController.position.pixels}');
+        if (scrollController.positions.isNotEmpty) {
+          // print(
+          //     '${widget.latestType} - pos: ${scrollController.position.pixels}');
 
-        //   var indexLast =
-        //       (scrollController.position.pixels * lastCount / (275 + 8));
-        //   print('${widget.latestType} - indexLast: $indexLast');
+          // var indexLast = (scrollController.position.pixels * lastCount / h);
+          // // print('${widget.latestType} - indexLast: $indexLast');
 
-        //   double firstLast = indexLast - indexLast % lastCount;
-        //   print('${widget.latestType} - firstLast: $firstLast');
+          // double firstLast = indexLast - indexLast.floor() % lastCount;
+          // print('${widget.latestType} - firstLast: $firstLast');
 
-        //   var index =
-        //       (scrollController.position.pixels * count / (275 + 8));
-        //   print('${widget.latestType} - index: $index');
+          // var row = (firstLast / count);
+          // print('${widget.latestType} - row: $row');
 
-        //   double first = index - index % lastCount;
-        //   print('${widget.latestType} - first: $first');
+          // var index = (scrollController.position.pixels * count / h);
+          // print('${widget.latestType} - index: $index');
 
-        //   if (lastCount != count) {
-        //     // var newPos = max(0.0, first * (275 + 8.0));
-        //     // // print('last: ${scrollController.position.pixels}, new: $newPos');
-        //     // scrollController.animateTo(
-        //     //   newPos,
-        //     //   duration: Duration(milliseconds: 500),
-        //     //   curve: Curves.fastOutSlowIn,
-        //     // );
-        //   }
-        // }
+          //  var row = index ~/ count;
+          // print('${widget.latestType} - row: $row');
 
-        // lastCount = count;
+          //   double first = index - index % lastCount;
+          //   print('${widget.latestType} - first: $first');
+
+          // var indexLast =
+          //     (scrollController.position.pixels * lastCount / h).ceil();
+          // int firstLast = (indexLast - indexLast.floor() % lastCount);
+          // var row = (indexLast / count);
+
+          // print('${widget.latestType} - row: $row');
+
+          // if (lastCount != count) {
+          //   var newPos = max(0.0, row * h);
+          //   // print('last: ${scrollController.position.pixels}, new: $newPos');
+          //   scrollController.animateTo(
+          //     newPos,
+          //     duration: Duration(milliseconds: 500),
+          //     curve: Curves.fastOutSlowIn,
+          //   );
+          // }
+        }
+
+        lastCount = count;
 
         return StreamBuilder<LatestState>(
           stream: LatestManager.streams[widget.latestType],
@@ -101,7 +147,9 @@ class PostGridState extends State<PostGrid>
                   crossAxisCount: count,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  childAspectRatio: ((constraints.maxWidth - 32) / count) / 275,
+                  childAspectRatio:
+                      ((constraints.maxWidth - (count + 1) * 8) / count) /
+                          (h - 8),
                 ),
                 itemBuilder: (BuildContext context, int index) {
                   var e = LatestManager.data[widget.latestType][index];

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:filmix_watch/bloc/latest_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:flutter/material.dart';
@@ -30,23 +31,34 @@ class PostTile extends StatelessWidget {
                 _buildPostType(),
                 _buildPostTime(),
                 if (post.type == PostType.serial) _buildPostAdded(),
-                // Positioned(
-                //   left: 16,
-                //   top: 100,
-                //   child: Text(
-                //     LatestManager.data[latest].indexOf(post).toString(),
-                //     style: TextStyle(
-                //       fontSize: 24,
-                //       color: Colors.white,
-                //       backgroundColor: Colors.black,
-                //     ),
-                //   ),
-                // ),
+                _buildNumber(),
               ],
             ),
           ),
           _buildPostName()
         ],
+      ),
+    );
+  }
+
+  Positioned _buildNumber() {
+    return Positioned(
+      left: 8,
+      bottom: 32,
+      child: Container(
+        padding: EdgeInsets.only(left: 4, right: 4, top: 2, bottom: 2),
+        child: Text(
+          '#${LatestManager.data[latest].indexOf(post) + 1}',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+        ),
       ),
     );
   }
@@ -83,7 +95,8 @@ class PostTile extends StatelessWidget {
         height: 250,
         width: double.infinity,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+        placeholder: (context, url) =>
+            Center(child: CircularProgressIndicator()),
         errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
       ),
     );
