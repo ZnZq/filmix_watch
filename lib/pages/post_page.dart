@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/media/translation.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/tiles/movie_tile.dart';
@@ -7,7 +6,9 @@ import 'package:filmix_watch/tiles/season_tile.dart';
 import 'package:flutter/material.dart';
 
 class PostPage extends StatelessWidget {
-  LatestType hero;
+  static final String route = '/post';
+
+  String hero;
   ScrollController scrollController;
 
   PostPage() {
@@ -18,9 +19,10 @@ class PostPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var map = ModalRoute.of(context).settings.arguments as Map;
     var post = map['post'] as MediaPost;
-    hero = map['hero'] as LatestType;
+    hero = map['hero'].toString();
 
-    if (post.translations.isEmpty && post.controller.value.isLoaded) post.loadMedia();
+    if (post.translations.isEmpty && post.controller.value.isLoaded)
+      post.loadMedia();
 
     // Future.delayed(Duration(milliseconds: 100), () {
     //   if (post.translations.isEmpty) post.loadMedia();
@@ -92,13 +94,25 @@ class PostPage extends StatelessWidget {
                     ? post.translations.map((e) {
                         Widget child = Text(e.name);
                         if (e is MovieTranslation) {
-                          child = MovieTile(
-                            movieTranslation: e,
-                            mediaPost: post,
-                          );
+                          if (e.qualities.isEmpty)
+                            child = Center(
+                              child: Text(
+                                  'Заблокировано по просьбе правообладателя'),
+                            );
+                          else
+                            child = MovieTile(
+                              movieTranslation: e,
+                              mediaPost: post,
+                            );
                         }
                         if (e is SerialTranslation) {
-                          child = SeasonTile(e);
+                          if (e.seasons.isEmpty)
+                            child = Center(
+                              child: Text(
+                                  'Заблокировано по просьбе правообладателя'),
+                            );
+                          else
+                            child = SeasonTile(e);
                         }
 
                         return child;
@@ -135,9 +149,9 @@ class PostPage extends StatelessWidget {
 
   Widget _buildBackground(MediaPost post) {
     return Hero(
-      tag: '$hero${post.poster}',
+      tag: '$hero${post.poster.original}',
       child: CachedNetworkImage(
-        imageUrl: post.poster,
+        imageUrl: post.poster.original,
         fit: BoxFit.cover,
         filterQuality: FilterQuality.high,
       ),

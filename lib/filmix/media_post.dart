@@ -1,5 +1,6 @@
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/filmix/media/translation.dart';
+import 'package:filmix_watch/filmix/poster.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -12,9 +13,9 @@ class MediaPost {
       year,
       translate,
       description,
-      poster,
       date,
       added;
+  final Poster poster;
   final PostType type;
   final List<Translation> translations;
 
@@ -35,7 +36,7 @@ class MediaPost {
     String added,
     String translate,
     String description,
-    String poster,
+    Poster poster,
     PostType type,
   }) {
     return _facotry.putIfAbsent(

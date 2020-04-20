@@ -1,9 +1,7 @@
-import 'dart:isolate';
-
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:filmix_watch/bloc/latest_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PostTile extends StatelessWidget {
@@ -12,26 +10,8 @@ class PostTile extends StatelessWidget {
 
   PostTile(this.post, this.latest);
 
-  // static callbackFunction(SendPort callerSendPort) async {
-  //   await Future.delayed(Duration(seconds: 3));
-
-  //   callerSendPort.send('Hello world');
-  // }
-
-  // Future isol() async {
-  //   ReceivePort receivePort = ReceivePort();
-  //   var newIsolate = await Isolate.spawn(
-  //     callbackFunction,
-  //     receivePort.sendPort,
-  //   );
-
-  //   return receivePort.first;
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // isol().then((value) => print(value));
-
     return Container(
       alignment: Alignment.center,
       height: 275,
@@ -51,6 +31,18 @@ class PostTile extends StatelessWidget {
                 _buildPostType(),
                 _buildPostTime(),
                 if (post.type == PostType.serial) _buildPostAdded(),
+                // Positioned(
+                //   left: 16,
+                //   top: 100,
+                //   child: Text(
+                //     LatestManager.data[latest].indexOf(post).toString(),
+                //     style: TextStyle(
+                //       fontSize: 24,
+                //       color: Colors.white,
+                //       backgroundColor: Colors.black,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -86,23 +78,16 @@ class PostTile extends StatelessWidget {
 
   Widget _buildPostPoster() {
     return Hero(
-      tag: '$latest${post.poster}',
+      tag: '$latest${post.poster.original}',
       child: CachedNetworkImage(
-        imageUrl: post.poster,
+        imageUrl: post.poster.original,
         height: 250,
         width: double.infinity,
         fit: BoxFit.cover,
-        placeholder: (context, url) => CircularProgressIndicator(),
-        errorWidget: (context, url, error) => Icon(Icons.error),
+        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
       ),
     );
-
-    // return Image.network(
-    //   post.poster,
-    //   height: 250,
-    //   width: double.infinity,
-    //   fit: BoxFit.cover,
-    // );
   }
 
   Widget _buildPostLike() {

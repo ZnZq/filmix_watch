@@ -1,7 +1,6 @@
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
-import 'package:filmix_watch/filmix/result.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 

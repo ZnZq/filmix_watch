@@ -6,6 +6,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:filmix_watch/filmix/cp1251.dart';
 import 'package:filmix_watch/filmix/media/translation.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/filmix/poster.dart';
 import 'package:filmix_watch/filmix/result.dart';
 import 'package:html/dom.dart';
 
@@ -48,35 +49,51 @@ class Filmix {
   static final postTypeRegex = RegExp(
       r'(<span class="mark">|)(Мультсериалы|Сериалы)(<\/span>|)(,{0,1}\s{0,})');
 
-  static Future<List<SearchResult>> search(String text) async {
-    var response = await http.get(
-      Uri.encodeFull('https://filmix.co/api/v2/suggestions?search_word=$text'),
-      headers: {'x-requested-with': 'XMLHttpRequest'},
-    );
+  static Future<Result<List<SearchResult>>> search(String text) async {
+    try {
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none)
+        return Result.error('Нет интернета');
 
-    var json = jsonDecode(response.body) as List;
+      var response = await http.get(
+        'https://filmix.co/api/v2/suggestions?search_word=${Uri.encodeFull(text.replaceAll(' ', '+'))}',
+        headers: {
+          'x-requested-with': 'XMLHttpRequest',
+        },
+      );
 
-    var result = <SearchResult>[];
+      if (response.statusCode != 200) {
+        print('Status ${response.statusCode}. ${response.body}');
+        return Result.error('Status ${response.statusCode}. ${response.body}');
+      }
 
-    for (var res in json) {
-      var categories = res['categories'].toString();
-      categories =
-          categories.replaceAllMapped(postTypeRegex, (m) => '${m[2]}${m[4]}');
+      var json = jsonDecode(response.body) as List;
 
-      result.add(SearchResult(
-        id: res['id'],
-        title: res['title'],
-        originalName: res['original_name'],
-        year: res['year'].toString(),
-        link: res['link'],
-        categories: categories,
-        poster: res['poster'],
-        lastSerie: res['last_serie'],
-        letter: res['letter'],
-      ));
+      var result = <SearchResult>[];
+
+      for (var res in json) {
+        var categories = res['categories'].toString();
+        categories =
+            categories.replaceAllMapped(postTypeRegex, (m) => '${m[2]}${m[4]}');
+
+        result.add(SearchResult(
+          id: res['id'],
+          title: res['title'],
+          originalName: res['original_name'],
+          year: res['year'].toString(),
+          link: res['link'],
+          categories: categories,
+          poster: Poster(res['poster']),
+          lastSerie: res['last_serie'],
+          letter: res['letter'],
+        ));
+      }
+
+      return Result.data(result);
+    } catch (e) {
+      print(e.toString());
+      return Result.error(e.toString());
     }
-
-    return result;
   }
 
   static String _latestType(LatestType type) {
@@ -303,7 +320,7 @@ class Filmix {
               translate: e['translate'],
               url: e['url'],
               year: e['year'],
-              poster: e['poster'],
+              poster: Poster(e['poster']),
               type: e['type'],
             ))
         .toList();
@@ -324,7 +341,7 @@ class Filmix {
               translate: e['translate'],
               url: e['url'],
               year: e['year'],
-              poster: e['poster'],
+              poster: Poster(e['poster']),
               type: e['type'],
             ))
         .toList();
@@ -364,6 +381,11 @@ class Filmix {
     SendPort replyPort = msg[1];
 
     var movieTranslations = <Map>[];
+
+    if (data['message']['translations']['video'] is List) {
+      replyPort.send(movieTranslations);
+      return;
+    }
 
     for (var video in data['message']['translations']['video'].keys) {
       var pjs = PlayerJS({
@@ -405,6 +427,10 @@ class Filmix {
       var movieTranslationsList =
           await sendReceive(sendPort, data.data) as List;
 
+      if (movieTranslationsList.isEmpty) {
+        return Result.data([MovieTranslation(name: 'Заблокировано', qualities: {})]);
+      }
+
       var movieTranslations = movieTranslationsList
           .map((e) => MovieTranslation(
                 name: e['name'],
@@ -428,6 +454,11 @@ class Filmix {
     SendPort replyPort = msg[1];
 
     var serialTranslations = <Map>[];
+
+    if (data['message']['translations']['video'] is List) {
+      replyPort.send(serialTranslations);
+      return;
+    }
 
     for (var video in data['message']['translations']['video'].keys) {
       var pjs = PlayerJS({
@@ -490,6 +521,10 @@ class Filmix {
 
       var serialTranslationsList =
           await sendReceive(sendPort, data.data) as List;
+
+      if (serialTranslationsList.isEmpty) {
+        return Result.data([SerialTranslation(name: 'Заблокировано', seasons: [])]);
+      }
 
       var serialTranslations = serialTranslationsList
           .map((t) => SerialTranslation(

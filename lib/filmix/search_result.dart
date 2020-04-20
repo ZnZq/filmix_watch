@@ -1,4 +1,5 @@
-import 'filmix.dart';
+import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/filmix/poster.dart';
 
 class SearchResult {
   final int id;
@@ -7,10 +8,10 @@ class SearchResult {
   final String year;
   final String link;
   final String categories;
-  final String poster;
+  final Poster poster;
   final String lastSerie;
   final String letter;
-  bool get isMovie => !Filmix.postTypeRegex.hasMatch(categories);
+  PostType get type => lastSerie.isEmpty ? PostType.movie : PostType.serial;
 
   SearchResult({
     this.id,

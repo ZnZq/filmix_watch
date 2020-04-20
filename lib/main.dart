@@ -1,9 +1,11 @@
 import 'package:filmix_watch/bloc/filter_manager.dart';
 import 'package:filmix_watch/bloc/theme_bloc.dart';
-import 'package:filmix_watch/pages/data/data_page.dart';
-import 'package:filmix_watch/pages/main/main_page.dart';
+import 'package:filmix_watch/pages/data_page.dart';
+import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/post_page.dart';
+import 'package:filmix_watch/pages/search_page.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path;
 
@@ -48,12 +50,33 @@ class App extends StatelessWidget {
           title: 'Filmix Watch',
           theme: snapshot.data,
           routes: {
-            '/': (_) => MainPage(),
-            '/data': (_) => DataPage(),
-            '/post': (_) => PostPage(),
+            MainPage.route: (_) => _willPopScope(MainPage()),
+            DataPage.route: (_) => DataPage(),
+            SearchPage.route: (_) => SearchPage(),
+            PostPage.route: (_) => PostPage(),
           },
         );
       },
     );
+  }
+
+  DateTime currentBackPressTime;
+
+  Widget _willPopScope(Widget child) {
+    return WillPopScope(
+      child: child,
+      onWillPop: onWillPop,
+    );
+  }
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      Fluttertoast.showToast(msg: 'Нажмите "Назад" еще раз, что бы выйти');
+      return Future.value(false);
+    }
+    return Future.value(true);
   }
 }

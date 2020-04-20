@@ -1,14 +1,19 @@
 import 'package:filmix_watch/bloc/filter_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
+import 'package:filmix_watch/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 class DataPage extends StatelessWidget {
+  static final String route = '/data';
+  static final String title = 'Данные';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Данные'),
+        title: Text(title),
       ),
+      drawer: AppDrawer(currentRoute: DataPage.route),
       body: ListView(
         children: [
           ExpansionTile(
