@@ -48,7 +48,7 @@ class PostTile extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.only(left: 4, right: 4, top: 2, bottom: 2),
         child: Text(
-          '#${LatestManager.data[latest].indexOf(post) + 1}',
+          '#${LatestManager.data[latest].indexOf(post)}',
           style: TextStyle(
             fontSize: 20,
             color: Colors.white,

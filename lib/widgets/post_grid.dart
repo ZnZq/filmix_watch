@@ -43,17 +43,33 @@ class PostGridState extends State<PostGrid>
   double h = (275 + 8.0);
   bool isScrool = false;
 
+  List<int> calc(double scroll, int width, double height) {
+    var index = (scroll * width / height);
+
+    var row = index / width;
+
+    if (row - row.floor() > 0.8)
+      row = row.roundToDouble();
+    else
+      row = row.floorToDouble();
+
+    var first = row * width;
+
+    return [row.toInt(), first.toInt()];
+  }
+
+  int lastFirst;
+
   scrollListener() {
-    if (isScrool) return;
+    isScrool = true;
     timer?.cancel();
     timer = Timer(Duration(milliseconds: 500), normalize);
   }
 
   normalize() {
-    isScrool = true;
-    print('normalize ${DateTime.now()}');
-    if (scrollController.positions.isNotEmpty) {
-      var indexLast = (scrollController.position.pixels * lastCount / h).ceil();
+    if (scrollController.positions.isNotEmpty && lastCount == 2) {
+      var indexLast =
+          (scrollController.position.pixels * lastCount / h).ceil();
       int firstLast = (indexLast - indexLast.floor() % lastCount);
       var row = (firstLast / count);
 
@@ -64,7 +80,6 @@ class PostGridState extends State<PostGrid>
         curve: Curves.easeInOut,
       );
     }
-    isScrool = false;
   }
 
   void _onRefresh() {
@@ -89,43 +104,22 @@ class PostGridState extends State<PostGrid>
         count = constraints.maxWidth > constraints.maxHeight ? 3 : 2;
 
         if (scrollController.positions.isNotEmpty) {
-          // print(
-          //     '${widget.latestType} - pos: ${scrollController.position.pixels}');
+          var old = calc(scrollController.position.pixels, lastCount, h);
 
-          // var indexLast = (scrollController.position.pixels * lastCount / h);
-          // // print('${widget.latestType} - indexLast: $indexLast');
+          var oldFirst = old[1];
 
-          // double firstLast = indexLast - indexLast.floor() % lastCount;
-          // print('${widget.latestType} - firstLast: $firstLast');
+          var newRow = ((isScrool ? (lastFirst = oldFirst) : lastFirst) / count).floor();
 
-          // var row = (firstLast / count);
-          // print('${widget.latestType} - row: $row');
-
-          // var index = (scrollController.position.pixels * count / h);
-          // print('${widget.latestType} - index: $index');
-
-          //  var row = index ~/ count;
-          // print('${widget.latestType} - row: $row');
-
-          //   double first = index - index % lastCount;
-          //   print('${widget.latestType} - first: $first');
-
-          // var indexLast =
-          //     (scrollController.position.pixels * lastCount / h).ceil();
-          // int firstLast = (indexLast - indexLast.floor() % lastCount);
-          // var row = (indexLast / count);
-
-          // print('${widget.latestType} - row: $row');
-
-          // if (lastCount != count) {
-          //   var newPos = max(0.0, row * h);
-          //   // print('last: ${scrollController.position.pixels}, new: $newPos');
-          //   scrollController.animateTo(
-          //     newPos,
-          //     duration: Duration(milliseconds: 500),
-          //     curve: Curves.fastOutSlowIn,
-          //   );
-          // }
+          if (lastCount != count) {
+            var newPos = max(0.0, newRow * h);
+            scrollController.animateTo(
+              newPos,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.fastOutSlowIn,
+            ).then((value) {
+              isScrool = false;
+            });
+          }
         }
 
         lastCount = count;
@@ -153,13 +147,17 @@ class PostGridState extends State<PostGrid>
                 ),
                 itemBuilder: (BuildContext context, int index) {
                   var e = LatestManager.data[widget.latestType][index];
-                  return GestureDetector(
-                    child: PostTile(e, widget.latestType),
-                    onTap: () {
-                      Navigator.pushNamed(context, PostPage.route,
-                          arguments: {'hero': widget.latestType, 'post': e});
-                    },
-                  );
+                  return LayoutBuilder(builder: (_, cb) {
+                    // print('min h: ${cb.minHeight}, max h: ${cb.maxHeight}');
+                    // print('min w: ${cb.minWidth}, max w: ${cb.maxWidth}');
+                    return GestureDetector(
+                      child: PostTile(e, widget.latestType),
+                      onTap: () {
+                        Navigator.pushNamed(context, PostPage.route,
+                            arguments: {'hero': widget.latestType, 'post': e});
+                      },
+                    );
+                  });
                 },
               ),
               footer: CustomFooter(

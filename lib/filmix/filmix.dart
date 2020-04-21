@@ -35,13 +35,13 @@ class Filmix {
   */
 
   static Map<String, String> getHeader(
-      {int per_page_news = 60, Map<String, String> cookie = const {}}) {
+      {int perPageNews = 60, Map<String, String> cookie = const {}}) {
     return {
       'x-requested-with': 'XMLHttpRequest',
       'cookie': {
         'dle_user_id': user?.id ?? '',
         'dle_password': user?.password ?? '',
-        'per_page_news': per_page_news.toString(),
+        'per_page_news': perPageNews.toString(),
         ...cookie
       }.entries.map((e) => '${e.key}=${e.value}').join('; ')
     };
@@ -315,7 +315,7 @@ class Filmix {
           'set_new_sort': 'dle_sort_cat',
           'set_direction_sort': 'dle_direction_cat',
         },
-        headers: getHeader(per_page_news: size),
+        headers: getHeader(perPageNews: size),
       );
 
       if (response.statusCode != 200) {

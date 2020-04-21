@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:filmix_watch/bloc/auth_manager.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
@@ -43,6 +42,7 @@ class AuthTile extends StatelessWidget {
             return ListTile(
               title: LinearProgressIndicator(),
             );
+          default: return ListTile(title: Text('Unknown'));
         }
       },
     );

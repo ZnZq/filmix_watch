@@ -1,6 +1,5 @@
 import 'package:filmix_watch/bloc/auth_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class AuthPage extends StatefulWidget {
