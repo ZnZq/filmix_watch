@@ -1,5 +1,5 @@
 import 'package:filmix_watch/filmix/filmix.dart';
-import 'package:filmix_watch/filmix/search_result.dart';
+import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -7,13 +7,13 @@ class SearchManager {
   static final searchController =
       BehaviorSubject<SearchState>.seeded(SearchState.loaded());
 
-  static List<SearchResult> data = [];
+  static List<MediaPost> data = [];
 
   static void search(String text) async {
     searchController.add(SearchState.refresh());
     data.clear();
 
-    var result = await Filmix.search(text);
+    var result = await Filmix.search2(text);
 
     if (!result.hasError) {
       data = result.data;

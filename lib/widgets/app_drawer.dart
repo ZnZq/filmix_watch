@@ -1,5 +1,6 @@
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
+import 'package:filmix_watch/pages/settings_page.dart';
 import 'package:filmix_watch/tiles/auth_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -17,28 +18,39 @@ class _AppDrawerState extends State<AppDrawer> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Drawer(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Divider(height: 8),
-              AuthTile(),
-              Divider(height: 16),
-              // _buildDrawerHeader(),
-              _buildDrawerItemReplacePush(
-                  icon: Icons.home,
-                  text: MainPage.title,
-                  route: MainPage.route),
-              Divider(height: 0),
-              _buildDrawerItem(icon: Icons.star_border, text: 'Избранное'),
-              Divider(height: 0),
-              _buildDrawerItemPush(
-                  icon: Icons.filter_drama,
-                  text: DataPage.title,
-                  route: DataPage.route),
-              Divider(height: 0),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 4),
+            AuthTile(),
+            SizedBox(height: 4),
+            Divider(height: 0),
+            Expanded(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  _buildDrawerItemReplacePush(
+                      icon: Icons.home,
+                      text: MainPage.title,
+                      route: MainPage.route),
+                  Divider(height: 0),
+                  _buildDrawerItem(icon: Icons.star_border, text: 'Избранное'),
+                  Divider(height: 0),
+                  _buildDrawerItemPush(
+                      icon: Icons.filter_drama,
+                      text: DataPage.title,
+                      route: DataPage.route),
+                  Divider(height: 0),
+                ],
+              ),
+            ),
+            Divider(height: 0),
+            _buildDrawerItemPush(
+              icon: Icons.settings,
+              text: SettingsPage.title,
+              route: SettingsPage.route,
+            ),
+          ],
         ),
       ),
     );
@@ -85,14 +97,6 @@ class _AppDrawerState extends State<AppDrawer> {
       leading: Icon(icon),
       title: Text(text),
       onTap: onTap,
-    );
-  }
-
-  DrawerHeader _buildDrawerHeader() {
-    return DrawerHeader(
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      child: AuthTile(),
     );
   }
 }

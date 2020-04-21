@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:filmix_watch/bloc/latest_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/pages/post_page.dart';
+import 'package:filmix_watch/settings.dart';
 import 'package:filmix_watch/tiles/post_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -41,7 +42,7 @@ class PostGridState extends State<PostGrid>
 
   Timer timer;
   double h = (275 + 8.0);
-  bool isScrool = false;
+  bool isScrool = true;
 
   List<int> calc(double scroll, int width, double height) {
     var index = (scroll * width / height);
@@ -58,7 +59,7 @@ class PostGridState extends State<PostGrid>
     return [row.toInt(), first.toInt()];
   }
 
-  int lastFirst;
+  int lastFirst = 0;
 
   scrollListener() {
     isScrool = true;
@@ -67,9 +68,8 @@ class PostGridState extends State<PostGrid>
   }
 
   normalize() {
-    if (scrollController.positions.isNotEmpty && lastCount == 2) {
-      var indexLast =
-          (scrollController.position.pixels * lastCount / h).ceil();
+    if (Settings.smartScroll && scrollController.positions.isNotEmpty && lastCount == 2) {
+      var indexLast = (scrollController.position.pixels * lastCount / h).ceil();
       int firstLast = (indexLast - indexLast.floor() % lastCount);
       var row = (firstLast / count);
 
@@ -108,15 +108,18 @@ class PostGridState extends State<PostGrid>
 
           var oldFirst = old[1];
 
-          var newRow = ((isScrool ? (lastFirst = oldFirst) : lastFirst) / count).floor();
+          var newRow =
+              ((isScrool ? (lastFirst = oldFirst) : lastFirst) / count).floor();
 
           if (lastCount != count) {
             var newPos = max(0.0, newRow * h);
-            scrollController.animateTo(
+            scrollController
+                .animateTo(
               newPos,
               duration: Duration(milliseconds: 500),
               curve: Curves.fastOutSlowIn,
-            ).then((value) {
+            )
+                .then((value) {
               isScrool = false;
             });
           }
@@ -147,17 +150,13 @@ class PostGridState extends State<PostGrid>
                 ),
                 itemBuilder: (BuildContext context, int index) {
                   var e = LatestManager.data[widget.latestType][index];
-                  return LayoutBuilder(builder: (_, cb) {
-                    // print('min h: ${cb.minHeight}, max h: ${cb.maxHeight}');
-                    // print('min w: ${cb.minWidth}, max w: ${cb.maxWidth}');
-                    return GestureDetector(
-                      child: PostTile(e, widget.latestType),
-                      onTap: () {
-                        Navigator.pushNamed(context, PostPage.route,
-                            arguments: {'hero': widget.latestType, 'post': e});
-                      },
-                    );
-                  });
+                  return GestureDetector(
+                    child: PostTile(e, widget.latestType),
+                    onTap: () {
+                      Navigator.pushNamed(context, PostPage.route,
+                          arguments: {'hero': widget.latestType, 'post': e});
+                    },
+                  );
                 },
               ),
               footer: CustomFooter(

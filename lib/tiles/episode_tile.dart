@@ -47,11 +47,10 @@ class EpisodeTile extends StatelessWidget {
     return PopupMenuButton(
       icon: icon,
       itemBuilder: (context) => [
-        for (var quality
-            in episode.qualities.keys.toList()..sort((a, b) => b.compareTo(a)))
+        for (var quality in episode.qualities)
           PopupMenuItem(
-            value: episode.qualities[quality],
-            child: Text('$text $quality'),
+            value: quality.url,
+            child: Text('$text ${quality.quality}'),
           )
       ],
       onSelected: onSelected,

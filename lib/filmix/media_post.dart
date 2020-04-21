@@ -1,7 +1,4 @@
-import 'package:filmix_watch/filmix/filmix.dart';
-import 'package:filmix_watch/filmix/media/translation.dart';
 import 'package:filmix_watch/filmix/poster.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 
 class MediaPost {
@@ -14,10 +11,11 @@ class MediaPost {
       translate,
       description,
       date,
-      added;
+      added,
+      quality;
   final Poster poster;
   final PostType type;
-  final List<Translation> translations;
+  // final List<Translation> translations;
 
   final BehaviorSubject<MediaState> controller;
 
@@ -34,6 +32,7 @@ class MediaPost {
     String year,
     String date,
     String added,
+    String quality,
     String translate,
     String description,
     Poster poster,
@@ -50,6 +49,7 @@ class MediaPost {
         name: name,
         date: date,
         added: added,
+        quality: quality,
         originName: originName,
         translate: translate,
         url: url,
@@ -71,34 +71,35 @@ class MediaPost {
     this.year,
     this.date,
     this.added,
+    this.quality,
     this.translate,
     this.description,
     this.poster,
     this.type,
-  })  : translations = [],
+  })  : /*translations = [],*/
         controller = BehaviorSubject<MediaState>.seeded(MediaState.loaded());
 
-  Future loadMedia() async {
-    controller.add(MediaState.refresh());
-    translations.clear();
-    switch (type) {
-      case PostType.serial:
-        var result = await Filmix.getSerial(id);
-        if (result.hasError) {
-          Fluttertoast.showToast(msg: result.error);
-        } else
-          translations.addAll(result.data);
-        break;
-      case PostType.movie:
-        var result = await Filmix.getMovie(id);
-        if (result.hasError) {
-          Fluttertoast.showToast(msg: result.error);
-        } else
-          translations.addAll(result.data);
-        break;
-    }
-    controller.add(MediaState.loaded());
-  }
+  // Future loadMedia() async {
+  //   controller.add(MediaState.refresh());
+  //   translations.clear();
+  //   switch (type) {
+  //     case PostType.serial:
+  //       var result = await Filmix.getSerial(id);
+  //       if (result.hasError) {
+  //         Fluttertoast.showToast(msg: result.error);
+  //       } else
+  //         translations.addAll(result.data);
+  //       break;
+  //     case PostType.movie:
+  //       var result = await Filmix.getMovie(id);
+  //       if (result.hasError) {
+  //         Fluttertoast.showToast(msg: result.error);
+  //       } else
+  //         translations.addAll(result.data);
+  //       break;
+  //   }
+  //   controller.add(MediaState.loaded());
+  // }
 }
 
 enum PostType { serial, movie }

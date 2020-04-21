@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
-import 'package:filmix_watch/filmix/search_result.dart';
+import 'package:filmix_watch/tiles/poster_tile.dart';
 import 'package:flutter/material.dart';
 
 class SearchPostTile extends StatelessWidget {
-  final SearchResult post;
+  final MediaPost post;
+  final String hero = 'search';
 
   SearchPostTile(this.post);
 
@@ -21,11 +21,10 @@ class SearchPostTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            children: [
-              _buildPostPoster(),
-              _buildPostType(),
-            ],
+          PosterTile(
+            post: post,
+            hero: hero,
+            width: 120,
           ),
           Expanded(
             child: Padding(
@@ -38,11 +37,10 @@ class SearchPostTile extends StatelessWidget {
                   SizedBox(height: 4),
                   if (post.year.isNotEmpty)
                     _buildAttr('Год: ', post.year, context),
-                  if (post.categories.isNotEmpty)
-                    _buildAttr('Жанр: ', post.categories, context),
-                  if (post.lastSerie.isNotEmpty)
-                    _buildAttr('Последняя серия: ',
-                        post.lastSerie.split(' - ').first, context),
+                  if (post.genre.isNotEmpty)
+                    _buildAttr('Жанр: ', post.genre, context),
+                  if (post.added.isNotEmpty)
+                    _buildAttr('Последняя серия: ', post.added, context),
                 ],
               ),
             ),
@@ -55,77 +53,54 @@ class SearchPostTile extends StatelessWidget {
   Widget _buildAttr(String name, String value, BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(top: 2),
-      child: Text.rich(
-        TextSpan(
-          style: TextStyle(fontSize: 12),
-          children: [
-            TextSpan(text: name),
-            TextSpan(
-              text: value,
-              style:
-                  TextStyle(color: Theme.of(context).textTheme.caption.color),
-            ),
-          ],
-        ),
+      child: Hero(
+        tag: '$hero${post.id}$name',
+        child: material(Text.rich(
+          TextSpan(
+            style: TextStyle(fontSize: 12),
+            children: [
+              TextSpan(text: name),
+              TextSpan(
+                text: value,
+                style:
+                    TextStyle(color: Theme.of(context).textTheme.caption.color),
+              ),
+            ],
+          ),
+        )),
       ),
     );
   }
 
-  Text _buildOriginalName(BuildContext context) {
-    return Text(
-      post.originalName,
-      softWrap: false,
-      overflow: TextOverflow.fade,
-      style: TextStyle(
-          fontSize: 12, color: Theme.of(context).textTheme.caption.color),
+  Widget _buildOriginalName(BuildContext context) {
+    return Hero(
+      tag: '$hero${post.id}originName',
+      child: material(Text(
+        post.originName,
+        softWrap: false,
+        overflow: TextOverflow.fade,
+        style: TextStyle(
+            fontSize: 12, color: Theme.of(context).textTheme.caption.color),
+      )),
+    );
+  }
+
+  Widget material(Widget child) {
+    return Material(
+      color: Colors.transparent,
+      child: child,
     );
   }
 
   Widget _buildTitle() {
     return Hero(
-      tag: 'search${post.title}',
-      child: Material(
-        color: Colors.transparent,
-        child: Text(
-          post.title,
-          softWrap: false,
-          overflow: TextOverflow.fade,
-          style: TextStyle(fontSize: 16),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPostPoster() {
-    return Hero(
-      tag: 'search${post.poster.original}',
-      child: CachedNetworkImage(
-        imageUrl: post.poster.original,
-        width: 100,
-        fit: BoxFit.cover,
-        placeholder: (context, url) =>
-            Center(child: CircularProgressIndicator()),
-        errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
-      ),
-    );
-  }
-
-  Positioned _buildPostType() {
-    return Positioned(
-      bottom: 0,
-      child: Container(
-        child: Text(
-          post.type == PostType.serial ? 'Сериал' : 'Фильм',
-          style: TextStyle(fontSize: 12),
-        ),
-        padding: EdgeInsets.only(left: 6, right: 6, bottom: 2, top: 2),
-        margin: EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: Colors.orange,
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
-        ),
-      ),
+      tag: '$hero${post.id}name',
+      child: material(Text(
+        post.name,
+        softWrap: false,
+        overflow: TextOverflow.fade,
+        style: TextStyle(fontSize: 16),
+      )),
     );
   }
 }

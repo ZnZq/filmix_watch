@@ -4,8 +4,12 @@ import 'dart:math';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:filmix_watch/filmix/cp1251.dart';
-import 'package:filmix_watch/filmix/media/translation.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/filmix/media/episode.dart';
+import 'package:filmix_watch/filmix/media/movie_translate.dart';
+import 'package:filmix_watch/filmix/media/quality.dart';
+import 'package:filmix_watch/filmix/media/season.dart';
+import 'package:filmix_watch/filmix/media/serial_translate.dart';
 import 'package:filmix_watch/filmix/poster.dart';
 import 'package:filmix_watch/filmix/result.dart';
 import 'package:filmix_watch/filmix/user_data.dart';
@@ -18,8 +22,6 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html;
 
 import 'player_js.dart';
-import 'media/episode.dart';
-import 'media/season.dart';
 import 'search_result.dart';
 
 class Filmix {
@@ -154,6 +156,29 @@ class Filmix {
 
   static final postTypeRegex = RegExp(
       r'(<span class="mark">|)(Мультсериалы|Сериалы)(<\/span>|)(,{0,1}\s{0,})');
+
+  static Future<Result<List<MediaPost>>> search2(String text) async {
+    try {
+      var response = await http.post(
+        'https://filmix.co/engine/ajax/sphinx_search.php',
+        headers: getHeader(),
+        body: {'story': text},
+      );
+
+      if (response.statusCode != 200) {
+        print('Status ${response.statusCode}. ${response.body}');
+        return Result.error('Status ${response.statusCode}. ${response.body}');
+      }
+
+      var document = html.parse(response.body);
+
+      var posts = Filmix.readArticles(document.querySelectorAll('article'));
+
+      return Result.data(posts);
+    } catch (e) {
+      return Result.error(e.toString());
+    }
+  }
 
   static Future<Result<List<SearchResult>>> search(String text) async {
     try {
@@ -361,6 +386,8 @@ class Filmix {
               ?.trim() ??
           '0');
 
+      var quality = article.querySelector('.quality')?.text?.trim() ?? '';
+
       var date = article.querySelector('.date')?.text?.trim() ?? '';
 
       var poster = article.querySelector('.short .poster').attributes['src'];
@@ -390,6 +417,7 @@ class Filmix {
         'like': like,
         'dislike': dislike,
         'added': added,
+        'quality': quality,
         'name': name,
         'date': date,
         'originName': originName,
@@ -411,6 +439,7 @@ class Filmix {
               like: e['like'],
               dislike: e['dislike'],
               added: e['added'],
+              quality: e['quality'],
               name: e['name'],
               date: e['date'],
               originName: e['originName'],
@@ -432,6 +461,7 @@ class Filmix {
               like: e['like'],
               dislike: e['dislike'],
               added: e['added'],
+              quality: e['quality'],
               name: e['name'],
               date: e['date'],
               originName: e['originName'],
@@ -474,10 +504,10 @@ class Filmix {
     Map data = msg[0];
     SendPort replyPort = msg[1];
 
-    var movieTranslations = <Map>[];
+    var movieTranslations = <MovieTranslate>[];
 
     if (data['message']['translations']['video'] is List) {
-      replyPort.send(movieTranslations);
+      replyPort.send(<Map>[]);
       return;
     }
 
@@ -489,24 +519,36 @@ class Filmix {
       var json = await pjs.init();
 
       var episodeFiles = json.split(',');
-      var qualities = <String, String>{};
+      var qualities = <Quality>[];
 
       for (var file in episodeFiles) {
         var m = _linkRegex.firstMatch(file);
         if (m != null) {
-          qualities[m.namedGroup('q')] = m.namedGroup('url');
+          qualities.add(Quality(
+            quality: m.namedGroup('q'),
+            url: m.namedGroup('url'),
+          ));
         }
       }
-      movieTranslations.add({
-        'name': video,
-        'qualities': qualities,
-      });
+
+      qualities.sort((a, b) => a.compareTo(b));
+
+      movieTranslations.add(MovieTranslate(
+        title: video,
+        media: qualities,
+      ));
     }
 
-    replyPort.send(movieTranslations);
+    var result = <Map>[];
+
+    for (var trans in movieTranslations) {
+      result.add(trans.toJson());
+    }
+
+    replyPort.send(result);
   }
 
-  static Future<Result<List<MovieTranslation>>> getMovie(int filmId) async {
+  static Future<Result<List<MovieTranslate>>> getMovie(int filmId) async {
     try {
       var data = await _getData(filmId);
 
@@ -521,19 +563,22 @@ class Filmix {
       var movieTranslationsList =
           await sendReceive(sendPort, data.data) as List;
 
-      if (movieTranslationsList.isEmpty) {
-        return Result.data(
-            [MovieTranslation(name: 'Заблокировано', qualities: {})]);
-      }
+      return Result.data(
+        movieTranslationsList.map((e) => MovieTranslate.fromJson(e)).toList(),
+      );
 
-      var movieTranslations = movieTranslationsList
-          .map((e) => MovieTranslation(
-                name: e['name'],
-                qualities: e['qualities'],
-              ))
-          .toList();
+      // if (movieTranslationsList.isEmpty) {
+      //   return Result.data([]);
+      // }
 
-      return Result.data(movieTranslations);
+      // var movieTranslations = movieTranslationsList
+      //     .map((e) => MovieTranslate(
+      //           title: e['name'],
+      //           media: e['qualities'],
+      //         ))
+      //     .toList();
+
+      // return Result.data(movieTranslations);
     } catch (e) {
       print(e);
       return Result.error(e.toString());
@@ -548,10 +593,10 @@ class Filmix {
     Map data = msg[0];
     SendPort replyPort = msg[1];
 
-    var serialTranslations = <Map>[];
+    var serialTranslations = <SerialTranslate>[];
 
     if (data['message']['translations']['video'] is List) {
-      replyPort.send(serialTranslations);
+      replyPort.send(<Map>[]);
       return;
     }
 
@@ -562,47 +607,52 @@ class Filmix {
 
       var json = await pjs.init();
 
-      var seasons = <Map>[];
+      var seasons = <Season>[];
       var seasonsMapList = jsonDecode(json) as List;
 
       for (var seasonMap in seasonsMapList) {
         var seasonTitle = seasonMap['title'].trim();
-        var episodes = <Map>[];
+        var episodes = <Episode>[];
         for (var episodeMap in seasonMap['folder']) {
           var episodeTitle = episodeMap['title'];
           var episodeId = episodeMap['id'];
           var episodeFiles = episodeMap['file'].split(',');
-          var qualities = <String, String>{};
+          var qualities = <Quality>[];
 
           for (var file in episodeFiles) {
             var m = _linkRegex.firstMatch(file);
             if (m != null) {
-              qualities[m.namedGroup('q')] = m.namedGroup('url');
+              qualities.add(Quality(
+                quality: m.namedGroup('q'),
+                url: m.namedGroup('url'),
+              ));
             }
           }
 
-          episodes.add({
-            'id': episodeId,
-            'title': episodeTitle,
-            'qualities': qualities,
-          });
+          qualities.sort((a, b) => a.compareTo(b));
+
+          episodes.add(Episode(
+              title: episodeTitle, id: episodeId, qualities: qualities));
         }
-        seasons.add({
-          'title': seasonTitle,
-          'episodes': episodes,
-        });
+        seasons.add(Season(title: seasonTitle, episodes: episodes));
       }
 
-      serialTranslations.add({
-        'name': video,
-        'seasons': seasons,
-      });
+      serialTranslations.add(SerialTranslate(
+        title: video,
+        media: seasons,
+      ));
     }
 
-    replyPort.send(serialTranslations);
+    var result = <Map>[];
+
+    for (var trans in serialTranslations) {
+      result.add(trans.toJson());
+    }
+
+    replyPort.send(result);
   }
 
-  static Future<Result<List<SerialTranslation>>> getSerial(int serialId) async {
+  static Future<Result<List<SerialTranslate>>> getSerial(int serialId) async {
     try {
       var data = await _getData(serialId);
 
@@ -617,30 +667,33 @@ class Filmix {
       var serialTranslationsList =
           await sendReceive(sendPort, data.data) as List;
 
-      if (serialTranslationsList.isEmpty) {
-        return Result.data(
-            [SerialTranslation(name: 'Заблокировано', seasons: [])]);
-      }
+      return Result.data(
+        serialTranslationsList.map((e) => SerialTranslate.fromJson(e)).toList(),
+      );
 
-      var serialTranslations = serialTranslationsList
-          .map((t) => SerialTranslation(
-                name: t['name'],
-                seasons: (t['seasons'] as List)
-                    .map((s) => Season(
-                          title: s['title'],
-                          episodes: (s['episodes'] as List)
-                              .map((e) => Episode(
-                                    id: e['id'],
-                                    title: e['title'],
-                                    qualities: e['qualities'],
-                                  ))
-                              .toList(),
-                        ))
-                    .toList(),
-              ))
-          .toList();
+      // if (serialTranslationsList.isEmpty) {
+      //   return Result.data([]);
+      // }
 
-      return Result.data(serialTranslations);
+      // var serialTranslations = serialTranslationsList
+      //     .map((t) => SerialTranslate(
+      //           title: t['name'],
+      //           seasons: (t['seasons'] as List)
+      //               .map((s) => Season(
+      //                     title: s['title'],
+      //                     episodes: (s['episodes'] as List)
+      //                         .map((e) => Episode(
+      //                               id: e['id'],
+      //                               title: e['title'],
+      //                               qualities: e['qualities'],
+      //                             ))
+      //                         .toList(),
+      //                   ))
+      //               .toList(),
+      //         ))
+      //     .toList();
+
+      // return Result.data(serialTranslationsList.map((e) => SerialTranslate.fromJson(e)).toList());
     } catch (e) {
       print(e);
       return Result.error(e.toString());

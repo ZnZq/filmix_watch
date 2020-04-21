@@ -1,5 +1,4 @@
 import 'package:filmix_watch/bloc/search_manager.dart';
-import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/tiles/search_post_tile.dart';
 import 'package:flutter/material.dart';
@@ -63,16 +62,7 @@ class _SearchPageState extends State<SearchPage> {
                   onTap: () {
                     Navigator.pushNamed(context, PostPage.route, arguments: {
                       'hero': 'search',
-                      'post': MediaPost(
-                        id: post.id,
-                        poster: post.poster,
-                        name: post.title,
-                        year: post.year,
-                        genre: post.categories,
-                        url: post.link,
-                        type: post.type,
-                        originName: post.originalName,
-                      ),
+                      'post': post,
                     });
                   },
                 );

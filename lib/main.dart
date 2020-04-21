@@ -1,11 +1,12 @@
 import 'package:filmix_watch/bloc/auth_manager.dart';
 import 'package:filmix_watch/bloc/filter_manager.dart';
-import 'package:filmix_watch/bloc/theme_bloc.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/pages/search_page.dart';
+import 'package:filmix_watch/pages/settings_page.dart';
+import 'package:filmix_watch/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
@@ -22,6 +23,7 @@ void main() async {
       future: Hive.openBox('filmix'),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          Settings.load();
           AuthManager.init();
           FilterManager.init();
           return App();
@@ -43,23 +45,17 @@ void main() async {
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ThemeBloc themeBloc = ThemeBloc();
-    return StreamBuilder(
-      initialData: themeBloc.initialTheme(),
-      stream: themeBloc.themeDataStream,
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Filmix Watch',
-          theme: snapshot.data,
-          routes: {
-            MainPage.route: (_) => _willPopScope(MainPage()),
-            DataPage.route: (_) => DataPage(),
-            SearchPage.route: (_) => SearchPage(),
-            PostPage.route: (_) => PostPage(),
-            AuthPage.route: (_) => AuthPage(),
-          },
-        );
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Filmix Watch',
+      theme: ThemeData.dark(),
+      routes: {
+        MainPage.route: (_) => _willPopScope(MainPage()),
+        DataPage.route: (_) => DataPage(),
+        SearchPage.route: (_) => SearchPage(),
+        SettingsPage.route: (_) => SettingsPage(),
+        PostPage.route: (_) => PostPage(),
+        AuthPage.route: (_) => AuthPage(),
       },
     );
   }
