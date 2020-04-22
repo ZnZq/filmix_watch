@@ -27,6 +27,16 @@ class MediaManager {
   static remove(int postId) {
     var box = Hive.box('filmix');
     box.delete('media-$postId');
+
+    var viewRegex = RegExp('view-$postId-');
+
+    for (var key in box.keys.toList()) {
+      var m = viewRegex.firstMatch(key.toString());
+      if (m != null) {
+        box.delete(key);
+      }
+    }
+
     mediaIds.remove(postId);
     MediaManager(PostManager.posts[postId]).controller.add([]);
   }
