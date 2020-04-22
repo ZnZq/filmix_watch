@@ -1,7 +1,10 @@
 import 'package:filmix_watch/bloc/auth_manager.dart';
+import 'package:filmix_watch/bloc/favorite_manager.dart';
 import 'package:filmix_watch/bloc/filter_manager.dart';
+import 'package:filmix_watch/bloc/post_manager.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
+import 'package:filmix_watch/pages/favorite_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/pages/search_page.dart';
@@ -24,6 +27,8 @@ void main() async {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           Settings.load();
+          PostManager.init();
+          FavoriteManager.init();
           AuthManager.init();
           FilterManager.init();
           return App();
@@ -56,6 +61,7 @@ class App extends StatelessWidget {
         SettingsPage.route: (_) => SettingsPage(),
         PostPage.route: (_) => PostPage(),
         AuthPage.route: (_) => AuthPage(),
+        FavoritePage.route: (_) => FavoritePage(),
       },
     );
   }

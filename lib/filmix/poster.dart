@@ -1,7 +1,8 @@
 class Poster {
   static final String _url = 'https://thumbs.filmix.co/posters'; 
-  static final RegExp regex = RegExp(r'\/(?<name>[\w-]+\.jpg)');
+  static final RegExp regex = RegExp(r'\/{0,1}(?<name>[\w-]+\.jpg)');
   String _name;
+  String get name => _name;
 
   String get w40 => '$_url/thumbs/w40/$_name';
   String get w220 => '$_url/thumbs/w220/$_name';

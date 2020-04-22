@@ -1,6 +1,6 @@
 import 'package:filmix_watch/bloc/search_manager.dart';
 import 'package:filmix_watch/pages/post_page.dart';
-import 'package:filmix_watch/tiles/search_post_tile.dart';
+import 'package:filmix_watch/tiles/row_post_tile.dart';
 import 'package:flutter/material.dart';
 
 class SearchPage extends StatefulWidget {
@@ -58,7 +58,7 @@ class _SearchPageState extends State<SearchPage> {
               itemBuilder: (context, index) {
                 var post = SearchManager.data[index];
                 return GestureDetector(
-                  child: SearchPostTile(post),
+                  child: RowPostTile(post),
                   onTap: () {
                     Navigator.pushNamed(context, PostPage.route, arguments: {
                       'hero': 'search',

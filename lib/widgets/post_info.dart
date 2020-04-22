@@ -24,6 +24,7 @@ class PostInfo extends StatelessWidget {
                 hero: hero,
                 width: 148,
                 showAdded: false,
+                contextMenu: false,
               ),
               _buildPostInfo(context),
             ],

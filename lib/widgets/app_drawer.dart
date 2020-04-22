@@ -1,4 +1,5 @@
 import 'package:filmix_watch/pages/data_page.dart';
+import 'package:filmix_watch/pages/favorite_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/settings_page.dart';
 import 'package:filmix_watch/tiles/auth_tile.dart';
@@ -34,7 +35,11 @@ class _AppDrawerState extends State<AppDrawer> {
                       text: MainPage.title,
                       route: MainPage.route),
                   Divider(height: 0),
-                  _buildDrawerItem(icon: Icons.star_border, text: 'Избранное'),
+                  _buildDrawerItemPush(
+                    icon: Icons.star_border,
+                    text: FavoritePage.title,
+                    route: FavoritePage.route,
+                  ),
                   Divider(height: 0),
                   _buildDrawerItemPush(
                       icon: Icons.filter_drama,

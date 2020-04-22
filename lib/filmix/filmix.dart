@@ -166,7 +166,6 @@ class Filmix {
       );
 
       if (response.statusCode != 200) {
-        print('Status ${response.statusCode}. ${response.body}');
         return Result.error('Status ${response.statusCode}. ${response.body}');
       }
 
@@ -192,7 +191,6 @@ class Filmix {
       );
 
       if (response.statusCode != 200) {
-        print('Status ${response.statusCode}. ${response.body}');
         return Result.error('Status ${response.statusCode}. ${response.body}');
       }
 
@@ -220,7 +218,6 @@ class Filmix {
 
       return Result.data(result);
     } catch (e) {
-      print(e.toString());
       return Result.error(e.toString());
     }
   }
@@ -245,26 +242,27 @@ class Filmix {
     message.send(port.sendPort);
 
     var msg = await port.first;
-    String data = msg[0];
+
+    List datas = msg[0];
+    String data = datas[0];
+    bool needDecode = datas[1];
     SendPort replyPort = msg[1];
 
-    var body = decodeCp1251(data);
+    var body = needDecode ? decodeCp1251(data) : data;
 
     var document = html.parse(body);
 
-    var die = document.getElementById('dle-content');
-
-    var currentPage = int.parse(die
+    var currentPage = int.parse(document
         .querySelector('.navigation span[data-number]')
         .attributes['data-number']);
-    var pageCount = (die
+    var pageCount = (document
             .querySelectorAll('.navigation a:not([class])')
             .map((a) => int.parse(a.attributes['data-number']))
             .toList()
               ..add(currentPage))
         .reduce(max);
 
-    var posts = Filmix.readArticlesMap(die.querySelectorAll('article'));
+    var posts = Filmix.readArticlesMap(document.querySelectorAll('article'));
 
     replyPort.send([currentPage, pageCount, posts]);
   }
@@ -286,8 +284,12 @@ class Filmix {
 
       page = max(1, page);
 
+      var needDecode = page > 1;
+
       var response = await http.get(
-        'https://filmix.co/${page > 1 ? 'page/$page/' : ''}',
+        needDecode
+            ? 'https://filmix.co/page/$page/'
+            : 'https://filmix.co/loader.php?requested_url=%2F',
         headers: getHeader(cookie: _latestType(type)),
       );
 
@@ -301,7 +303,7 @@ class Filmix {
 
       SendPort sendPort = await receivePort.first;
 
-      var postResult = await sendReceive(sendPort, response.body);
+      var postResult = await sendReceive(sendPort, [response.body, needDecode]);
       var currentPage = postResult[0];
       var pageCount = postResult[1];
       var posts = postResult[2];
@@ -314,7 +316,6 @@ class Filmix {
 
       return result;
     } catch (e) {
-      print(e);
       return Result.error(e.toString());
     }
   }
@@ -367,7 +368,6 @@ class Filmix {
         posts: posts,
       ));
     } catch (e) {
-      print(e);
       return Result.error(e.toString());
     }
   }
@@ -443,7 +443,7 @@ class Filmix {
               name: e['name'],
               date: e['date'],
               originName: e['originName'],
-              translate: e['translate'],
+              // translate: e['translate'],
               url: e['url'],
               year: e['year'],
               poster: Poster(e['poster']),
@@ -465,7 +465,7 @@ class Filmix {
               name: e['name'],
               date: e['date'],
               originName: e['originName'],
-              translate: e['translate'],
+              // translate: e['translate'],
               url: e['url'],
               year: e['year'],
               poster: Poster(e['poster']),
@@ -491,7 +491,6 @@ class Filmix {
 
       return Result.data(jsonDecode(response.body));
     } catch (e) {
-      print(e);
       return Result.error(e.toString());
     }
   }
@@ -552,7 +551,7 @@ class Filmix {
     try {
       var data = await _getData(filmId);
 
-      if (data.hasError) return Result.error(data.error);
+      if (data.hasError) return Result.error(data.error, false);
 
       ReceivePort receivePort = ReceivePort();
 
@@ -580,7 +579,6 @@ class Filmix {
 
       // return Result.data(movieTranslations);
     } catch (e) {
-      print(e);
       return Result.error(e.toString());
     }
   }
@@ -656,7 +654,7 @@ class Filmix {
     try {
       var data = await _getData(serialId);
 
-      if (data.hasError) return Result.error(data.error);
+      if (data.hasError) return Result.error(data.error, false);
 
       ReceivePort receivePort = ReceivePort();
 
@@ -695,7 +693,6 @@ class Filmix {
 
       // return Result.data(serialTranslationsList.map((e) => SerialTranslate.fromJson(e)).toList());
     } catch (e) {
-      print(e);
       return Result.error(e.toString());
     }
   }

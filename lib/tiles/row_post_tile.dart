@@ -2,15 +2,25 @@ import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/tiles/poster_tile.dart';
 import 'package:flutter/material.dart';
 
-class SearchPostTile extends StatelessWidget {
+class RowPostTile extends StatelessWidget {
   final MediaPost post;
-  final String hero = 'search';
+  final String hero;
+  final EdgeInsets margin;
+  final double width;
 
-  SearchPostTile(this.post);
+  RowPostTile(this.post, {
+    this.hero = 'search',
+    Key key,
+    this.margin,
+    this.width,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 175,
+      width: width,
+      margin: margin,
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
@@ -25,6 +35,9 @@ class SearchPostTile extends StatelessWidget {
             post: post,
             hero: hero,
             width: 120,
+            imageHeight: 175,
+            showAdded: false,
+            showTime: false,
           ),
           Expanded(
             child: Padding(

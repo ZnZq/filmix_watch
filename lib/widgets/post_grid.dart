@@ -6,12 +6,12 @@ import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/settings.dart';
 import 'package:filmix_watch/tiles/post_tile.dart';
+import 'package:filmix_watch/widgets/post_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class PostGrid extends StatefulWidget {
   final LatestType latestType;
-  final Map<int, GlobalKey> keys = {};
 
   PostGrid(this.latestType);
 
@@ -19,47 +19,28 @@ class PostGrid extends StatefulWidget {
   PostGridState createState() => PostGridState();
 }
 
-class PostGridState extends State<PostGrid>
-    with AutomaticKeepAliveClientMixin<PostGrid> {
+class PostGridState extends State<PostGrid> {
+  var count = 0;
+  var lastCount = 0;
+  var lastFirst = 0;
+  var h = 275 + 8.0;
+  Timer timer;
+  var isScrool = true;
+
   RefreshController _refreshController;
-
   ScrollController scrollController;
-
-  @override
-  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+
     _refreshController = RefreshController(
       initialRefresh: LatestManager.data[widget.latestType].isEmpty,
     );
 
     scrollController = ScrollController();
-
     scrollController.addListener(scrollListener);
   }
-
-  Timer timer;
-  double h = (275 + 8.0);
-  bool isScrool = true;
-
-  List<int> calc(double scroll, int width, double height) {
-    var index = (scroll * width / height);
-
-    var row = index / width;
-
-    if (row - row.floor() > 0.8)
-      row = row.roundToDouble();
-    else
-      row = row.floorToDouble();
-
-    var first = row * width;
-
-    return [row.toInt(), first.toInt()];
-  }
-
-  int lastFirst = 0;
 
   scrollListener() {
     isScrool = true;
@@ -68,7 +49,9 @@ class PostGridState extends State<PostGrid>
   }
 
   normalize() {
-    if (Settings.smartScroll && scrollController.positions.isNotEmpty && lastCount == 2) {
+    if (Settings.smartScroll &&
+        scrollController.positions.isNotEmpty &&
+        lastCount == 2) {
       var indexLast = (scrollController.position.pixels * lastCount / h).ceil();
       int firstLast = (indexLast - indexLast.floor() % lastCount);
       var row = (firstLast / count);
@@ -92,37 +75,14 @@ class PostGridState extends State<PostGrid>
         .then((_) => _refreshController.loadComplete());
   }
 
-  var count = 0;
-  var lastCount = 0;
-
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        count = constraints.maxWidth > constraints.maxHeight ? 3 : 2;
+        count = (constraints.maxWidth / 175).floor();
 
         if (scrollController.positions.isNotEmpty) {
-          var old = calc(scrollController.position.pixels, lastCount, h);
-
-          var oldFirst = old[1];
-
-          var newRow =
-              ((isScrool ? (lastFirst = oldFirst) : lastFirst) / count).floor();
-
-          if (lastCount != count) {
-            var newPos = max(0.0, newRow * h);
-            scrollController
-                .animateTo(
-              newPos,
-              duration: Duration(milliseconds: 500),
-              curve: Curves.fastOutSlowIn,
-            )
-                .then((value) {
-              isScrool = false;
-            });
-          }
+          normalizeRotationPosition();
         }
 
         lastCount = count;
@@ -130,36 +90,30 @@ class PostGridState extends State<PostGrid>
         return StreamBuilder<LatestState>(
           stream: LatestManager.streams[widget.latestType],
           builder: (BuildContext context, AsyncSnapshot<LatestState> snapshot) {
-            return SmartRefresher(
-              controller: _refreshController,
-              enablePullDown: true,
-              enablePullUp: true,
+            return PostGridView(
+              refreshController: _refreshController,
               onRefresh: _onRefresh,
               onLoading: _onLoading,
-              child: GridView.builder(
-                controller: scrollController,
-                padding: EdgeInsets.all(8),
-                itemCount: LatestManager.data[widget.latestType].length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: count,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio:
-                      ((constraints.maxWidth - (count + 1) * 8) / count) /
-                          (h - 8),
-                ),
-                itemBuilder: (BuildContext context, int index) {
-                  var e = LatestManager.data[widget.latestType][index];
-                  return GestureDetector(
-                    child: PostTile(e, widget.latestType),
-                    onTap: () {
-                      Navigator.pushNamed(context, PostPage.route,
-                          arguments: {'hero': widget.latestType, 'post': e});
-                    },
-                  );
-                },
-              ),
-              footer: CustomFooter(
+              initialRefresh: LatestManager.data[widget.latestType].isEmpty,
+              inRowCount: count,
+              scrollController: scrollController,
+              width: constraints.maxWidth,
+              itemCount: LatestManager.data[widget.latestType].length,
+              itemBuilder: (BuildContext context, int index) {
+                var e = LatestManager.data[widget.latestType][index];
+                return GestureDetector(
+                  child: PostTile(
+                    e,
+                    widget.latestType.toString(),
+                    number: index + 1,
+                  ),
+                  onTap: () {
+                    Navigator.pushNamed(context, PostPage.route,
+                        arguments: {'hero': widget.latestType, 'post': e});
+                  },
+                );
+              },
+              refreshFooter: CustomFooter(
                 builder: (BuildContext context, LoadStatus mode) {
                   Widget body;
                   if (mode == LoadStatus.loading) {
@@ -176,5 +130,42 @@ class PostGridState extends State<PostGrid>
         );
       },
     );
+  }
+
+  void normalizeRotationPosition() {
+    var old = calc(scrollController.position.pixels, lastCount, h);
+
+    var oldFirst = old[1];
+
+    var newRow =
+        ((isScrool ? (lastFirst = oldFirst) : lastFirst) / count).floor();
+
+    if (lastCount != count) {
+      var newPos = max(0.0, newRow * h);
+      scrollController
+          .animateTo(
+        newPos,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
+      )
+          .then((value) {
+        isScrool = false;
+      });
+    }
+  }
+
+  List<int> calc(double scroll, int width, double height) {
+    var index = (scroll * width / height);
+
+    var row = index / width;
+
+    if (row - row.floor() > 0.8)
+      row = row.roundToDouble();
+    else
+      row = row.floorToDouble();
+
+    var first = row * width;
+
+    return [row.toInt(), first.toInt()];
   }
 }

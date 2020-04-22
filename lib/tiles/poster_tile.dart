@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:filmix_watch/bloc/favorite_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/settings.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +13,7 @@ class PosterTile extends StatelessWidget {
   final double width, imageHeight, likeSize;
   final int number;
   final bool showType, showLike, showTime, showAdded, showQuality;
+  final bool contextMenu;
 
   PosterTile({
     @required this.post,
@@ -25,6 +27,7 @@ class PosterTile extends StatelessWidget {
     this.showType = true,
     this.showAdded = true,
     this.showQuality = true,
+    this.contextMenu = true,
   });
 
   @override
@@ -32,13 +35,40 @@ class PosterTile extends StatelessWidget {
     return StreamBuilder(
       stream: Settings.updateController,
       builder: (_, __) {
-        return Stack(
+        Widget child = Stack(
           children: [
             _buildPostPoster(),
             _buildInfo(),
             if (Settings.showPostLike && showLike) _buildPostLike(),
           ],
         );
+
+        return contextMenu
+            ? GestureDetector(
+                child: child,
+                onLongPressStart: (details) {
+                  final RenderBox referenceBox = context.findRenderObject();
+                  var tapPosition =
+                      referenceBox.globalToLocal(details.globalPosition);
+
+                  final RenderBox button =
+                      context.findRenderObject() as RenderBox;
+                  final RenderBox overlay = Overlay.of(context)
+                      .context
+                      .findRenderObject() as RenderBox;
+                  final RelativeRect position = RelativeRect.fromRect(
+                    Rect.fromPoints(
+                      button.localToGlobal(tapPosition, ancestor: overlay),
+                      button.localToGlobal(button.size.bottomRight(Offset.zero),
+                          ancestor: overlay),
+                    ),
+                    Offset.zero & overlay.size,
+                  );
+
+                  FavoriteManager.showFavoriteMenu(context, position, post);
+                },
+              )
+            : child;
       },
     );
   }
@@ -74,31 +104,47 @@ class PosterTile extends StatelessWidget {
   }
 
   Widget _buildQuality() {
-    return Container(
-      child: Text(post.quality, style: TextStyle(fontSize: 12)),
-      padding: EdgeInsets.only(left: 4, right: 4, bottom: 2, top: 2),
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.blue[700], spreadRadius: .5)],
+    return heroMaterial(
+      heroKey: 'quality',
+      child: Container(
+        child: Text(post.quality, style: TextStyle(fontSize: 12)),
+        padding: EdgeInsets.only(left: 4, right: 4, bottom: 2, top: 2),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [BoxShadow(color: Colors.blue[700], spreadRadius: .5)],
+        ),
+      ),
+    );
+  }
+
+  Widget heroMaterial({String heroKey, Widget child}) {
+    return Hero(
+      tag: '$hero${post.id}$heroKey',
+      child: Material(
+        color: Colors.transparent,
+        child: child,
       ),
     );
   }
 
   Widget _buildNumber(int number) {
-    return Container(
-      padding: EdgeInsets.only(left: 4, right: 4, top: 2, bottom: 2),
-      child: Text(
-        '#$number',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.white,
+    return heroMaterial(
+      heroKey: 'number',
+      child: Container(
+        padding: EdgeInsets.only(left: 4, right: 4, top: 2, bottom: 2),
+        child: Text(
+          '#$number',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white,
+          ),
         ),
-      ),
-      decoration: BoxDecoration(
-        color: Colors.orange,
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+        ),
       ),
     );
   }
@@ -130,49 +176,58 @@ class PosterTile extends StatelessWidget {
             children: [
               Padding(
                 padding: EdgeInsets.only(left: 8, right: 8, bottom: 4),
-                child: Text(
-                  '${post.like}',
-                  style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.w900,
-                      fontSize: likeSize,
-                      shadows: [
-                        Shadow(
-                            color: Colors.black,
-                            offset: Offset.zero,
-                            blurRadius: 2)
-                      ]),
+                child: heroMaterial(
+                  heroKey: 'like',
+                  child: Text(
+                    '${post.like}',
+                    style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.w900,
+                        fontSize: likeSize,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black,
+                              offset: Offset.zero,
+                              blurRadius: 2)
+                        ]),
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(left: 8, right: 8, bottom: 4),
-                child: Text(
-                  '${post.dislike}',
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w900,
-                      fontSize: likeSize,
-                      shadows: [
-                        Shadow(
-                            color: Colors.black,
-                            offset: Offset.zero,
-                            blurRadius: 2)
-                      ]),
+                child: heroMaterial(
+                  heroKey: 'dislike',
+                  child: Text(
+                    '${post.dislike}',
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w900,
+                        fontSize: likeSize,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black,
+                              offset: Offset.zero,
+                              blurRadius: 2)
+                        ]),
+                  ),
                 ),
               ),
             ],
           ),
-          Row(
-            children: [
-              Expanded(
-                flex: max(1, post.like),
-                child: Container(height: 2, color: Colors.green),
-              ),
-              Expanded(
-                flex: max(1, post.dislike),
-                child: Container(height: 2, color: Colors.red),
-              ),
-            ],
+          heroMaterial(
+            heroKey: 'likeBar',
+            child: Row(
+              children: [
+                Expanded(
+                  flex: max(1, post.like),
+                  child: Container(height: 2, color: Colors.green),
+                ),
+                Expanded(
+                  flex: max(1, post.dislike),
+                  child: Container(height: 2, color: Colors.red),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -180,41 +235,50 @@ class PosterTile extends StatelessWidget {
   }
 
   Widget _buildPostAdded() {
-    return Container(
-      padding: EdgeInsets.only(left: 4, right: 4, bottom: 2, top: 2),
-      child:
-          Text(post.added.split(' - ').first, style: TextStyle(fontSize: 12)),
-      decoration: BoxDecoration(
-        color: Colors.deepOrange,
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+    return heroMaterial(
+      heroKey: 'added',
+      child: Container(
+        padding: EdgeInsets.only(left: 4, right: 4, bottom: 2, top: 2),
+        child:
+            Text(post.added.split(' - ').first, style: TextStyle(fontSize: 12)),
+        decoration: BoxDecoration(
+          color: Colors.deepOrange,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+        ),
       ),
     );
   }
 
   Widget _buildPostTime() {
-    return Container(
-      child: Text(post.date, style: TextStyle(fontSize: 12)),
-      padding: EdgeInsets.only(left: 4, right: 4, bottom: 2, top: 2),
-      decoration: BoxDecoration(
-        color: Colors.deepOrange,
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+    return heroMaterial(
+      heroKey: 'date',
+      child: Container(
+        child: Text(post.date, style: TextStyle(fontSize: 12)),
+        padding: EdgeInsets.only(left: 4, right: 4, bottom: 2, top: 2),
+        decoration: BoxDecoration(
+          color: Colors.deepOrange,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+        ),
       ),
     );
   }
 
   Widget _buildPostType() {
-    return Container(
-      child: Text(
-        post.type == PostType.serial ? 'Сериал' : 'Фильм',
-        style: TextStyle(fontSize: 12),
-      ),
-      padding: EdgeInsets.only(left: 6, right: 6, bottom: 2, top: 2),
-      decoration: BoxDecoration(
-        color: Colors.orange,
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+    return heroMaterial(
+      heroKey: 'type',
+      child: Container(
+        child: Text(
+          post.type == PostType.serial ? 'Сериал' : 'Фильм',
+          style: TextStyle(fontSize: 12),
+        ),
+        padding: EdgeInsets.only(left: 6, right: 6, bottom: 2, top: 2),
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [BoxShadow(color: Colors.orange[700], spreadRadius: .5)],
+        ),
       ),
     );
   }
