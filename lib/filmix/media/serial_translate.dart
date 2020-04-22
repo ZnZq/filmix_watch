@@ -15,6 +15,10 @@ class SerialTranslate extends Translate<Season> {
     media ??= [];
   }
 
+  double progress(int postId) {
+    return media.map((m) => m.progress(postId)).fold(0, (a, b) => a + b) / media.length;
+  }
+
   SerialTranslate.fromJson(Map<String, dynamic> json) {
     title = json['title'] ?? '';
     media = json['media']?.map((e) => Season.fromJson(e))?.cast<Season>()?.toList() ?? [];

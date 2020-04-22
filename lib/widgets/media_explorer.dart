@@ -1,4 +1,6 @@
 import 'package:filmix_watch/bloc/media_manager.dart';
+import 'package:filmix_watch/filmix/media/episode.dart';
+import 'package:filmix_watch/filmix/media/serial_translate.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/media/translate.dart';
 import 'package:filmix_watch/tiles/episode_tile.dart';
@@ -124,7 +126,11 @@ class _MediaExplorerState extends State<MediaExplorer> {
               child = _translateTile(index);
               break;
             case 1:
+              // var episodes = navData.last[index].episodes as List<Episode>;
               child = ListTile(
+                subtitle: LinearProgressIndicator(
+                  value: navData.last[index].progress(widget.post.id),
+                ),
                 title: Text(navData.last[index].title),
                 trailing: Icon(Icons.arrow_forward),
                 onTap: () {
@@ -153,9 +159,15 @@ class _MediaExplorerState extends State<MediaExplorer> {
   }
 
   ListTile _translateTile(int index) {
+    var value = -1.0;
+    var trans = widget.translates[index];
+    if (trans is SerialTranslate) {
+      value = trans.progress(widget.post.id);
+    }
     return ListTile(
       title: Text(widget.translates[index].title),
       trailing: Icon(Icons.arrow_forward),
+      subtitle: value >= 0 ? LinearProgressIndicator(value: value) : null,
       onTap: () {
         nav.add(navData.last[index].title);
         setState(() {

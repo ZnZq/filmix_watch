@@ -1,8 +1,15 @@
+import 'package:filmix_watch/bloc/media_manager.dart';
+
 import 'episode.dart';
 
 class Season {
   String title;
   List<Episode> episodes;
+
+  double progress(int postId) {
+    return episodes.where((ep) => MediaManager.getView(postId, ep.id)).length /
+        episodes.length;
+  }
 
   Season({
     this.title = '',
@@ -13,7 +20,11 @@ class Season {
 
   Season.fromJson(Map<String, dynamic> json) {
     title = json['title'] ?? 'Сезон';
-    episodes = json['episodes']?.map((e) => Episode.fromJson(e))?.cast<Episode>()?.toList() ?? [];
+    episodes = json['episodes']
+            ?.map((e) => Episode.fromJson(e))
+            ?.cast<Episode>()
+            ?.toList() ??
+        [];
   }
 
   Map<String, dynamic> toJson() {
