@@ -34,6 +34,7 @@ class MediaManager {
   final MediaPost post;
   BehaviorSubject<List<Translate>> _controller;
   BehaviorSubject<List<Translate>> get controller => _controller;
+  List<Translate> translates = [];
 
   factory MediaManager(MediaPost post) {
     return _manager.putIfAbsent(post.id, () => MediaManager._(post));
@@ -58,20 +59,19 @@ class MediaManager {
     if (box.containsKey('media-${post.id}')) {
       var json = box.get('media-${post.id}', defaultValue: '[]');
       var list = jsonDecode(json) as List;
-      var transletes = <Translate>[];
       switch (post.type) {
         case PostType.serial:
           {
-            transletes = list.map((e) => SerialTranslate.fromJson(e)).toList();
+            translates = list.map((e) => SerialTranslate.fromJson(e)).toList();
             break;
           }
         case PostType.movie:
           {
-            transletes = list.map((e) => MovieTranslate.fromJson(e)).toList();
+            translates = list.map((e) => MovieTranslate.fromJson(e)).toList();
             break;
           }
       }
-      controller.add(transletes);
+      controller.add(translates);
       return;
     }
 
@@ -80,7 +80,6 @@ class MediaManager {
 
   refresh() async {
     controller.add(null);
-    var translates = <Translate>[];
     Result<List<Translate>> result;
     switch (post.type) {
       case PostType.serial:
@@ -97,6 +96,7 @@ class MediaManager {
 
     if (result.hasError) {
       Fluttertoast.showToast(msg: result.error);
+      translates = [];
     } else {
       translates = result.data;
 
@@ -106,7 +106,20 @@ class MediaManager {
       PostManager.save(post);
       mediaIds.add(post.id);
     }
-
     controller.add(translates);
+  }
+
+  static setView(int postId, String episodeId, bool view) {
+    var box = Hive.box('filmix');
+    if (view) {
+      box.put('view-$postId-$episodeId', view);
+    } else {
+      box.delete('view-$postId-$episodeId');
+    }
+  }
+
+  static bool getView(int postId, String episodeId) {
+    var box = Hive.box('filmix');
+    return box.get('view-$postId-$episodeId', defaultValue: false);
   }
 }

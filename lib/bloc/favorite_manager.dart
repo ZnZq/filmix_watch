@@ -10,7 +10,7 @@ import 'package:rxdart/rxdart.dart';
 class FavoriteManager {
   static Map<int, FavoriteItem> _favoriteItems;
 
-  static Map<FavoriteTab, List<int>> posts;
+  static Map<FavoriteTab, Map<PostType, List<int>>> posts;
 
   static BehaviorSubject _controller = BehaviorSubject();
   static BehaviorSubject get updateController => _controller;
@@ -18,9 +18,22 @@ class FavoriteManager {
   static init() {
     _favoriteItems = {};
     posts = {
-      FavoriteTab.favorite: [],
-      FavoriteTab.future: [],
-      FavoriteTab.completed: [],
+      FavoriteTab.favorite: <PostType, List<int>>{
+        PostType.serial: [],
+        PostType.movie: [],
+      },
+      FavoriteTab.future: <PostType, List<int>>{
+        PostType.serial: [],
+        PostType.movie: [],
+      },
+      FavoriteTab.process: <PostType, List<int>>{
+        PostType.serial: [],
+        PostType.movie: [],
+      },
+      FavoriteTab.completed: <PostType, List<int>>{
+        PostType.serial: [],
+        PostType.movie: [],
+      },
     };
 
     var box = Hive.box('filmix');
@@ -28,26 +41,31 @@ class FavoriteManager {
     var list = jsonDecode(box.get('favorites', defaultValue: '[]')) as List;
     var fav = list.map((e) => FavoriteItem.fromJson(e)).toList();
 
-    posts[FavoriteTab.favorite] = (box.get(FavoriteTab.favorite.toString(), defaultValue: <int>[]) as List).cast<int>().toList();
-    posts[FavoriteTab.future] = (box.get(FavoriteTab.future.toString(), defaultValue: <int>[]) as List).cast<int>().toList();
-    posts[FavoriteTab.completed] = (box.get(FavoriteTab.completed.toString(), defaultValue: <int>[]) as List).cast<int>().toList();
+    for (var type in PostType.values) {
+      posts[FavoriteTab.favorite][type] =
+          (box.get('${FavoriteTab.favorite}-$type', defaultValue: <int>[])
+                  as List)
+              .cast<int>()
+              .toList();
+      posts[FavoriteTab.future][type] =
+          (box.get('${FavoriteTab.future}-$type', defaultValue: <int>[])
+                  as List)
+              .cast<int>()
+              .toList();
+      posts[FavoriteTab.process][type] =
+          (box.get('${FavoriteTab.process}-$type', defaultValue: <int>[])
+                  as List)
+              .cast<int>()
+              .toList();
+      posts[FavoriteTab.completed][type] =
+          (box.get('${FavoriteTab.completed}-$type', defaultValue: <int>[])
+                  as List)
+              .cast<int>()
+              .toList();
+    }
 
     for (var f in fav) {
       _favoriteItems[f.postId] = f;
-
-      // if (f.isFavorite) {
-      //   posts[FavoriteTab.favorite].add(f.postId);
-      // }
-
-      // switch (f.state) {
-      //   case FavoriteState.future:
-      //     posts[FavoriteTab.future].add(f.postId);
-      //     break;
-      //   case FavoriteState.completed:
-      //     posts[FavoriteTab.completed].add(f.postId);
-      //     break;
-      //   default:
-      // }
     }
   }
 
@@ -56,9 +74,12 @@ class FavoriteManager {
 
     var list = _favoriteItems.entries.map((e) => e.value.toJson()).toList();
 
-    box.put(FavoriteTab.favorite.toString(), posts[FavoriteTab.favorite]);
-    box.put(FavoriteTab.future.toString(), posts[FavoriteTab.future]);
-    box.put(FavoriteTab.completed.toString(), posts[FavoriteTab.completed]);
+    for (var type in PostType.values) {
+      box.put('${FavoriteTab.favorite}-$type', posts[FavoriteTab.favorite][type]);
+      box.put('${FavoriteTab.future}-$type', posts[FavoriteTab.future][type]);
+      box.put('${FavoriteTab.process}-$type', posts[FavoriteTab.future][type]);
+      box.put('${FavoriteTab.completed}-$type', posts[FavoriteTab.completed][type]);
+    }
 
     box.put('favorites', jsonEncode(list));
     updateController.add(null);
@@ -83,8 +104,8 @@ class FavoriteManager {
         () => FavoriteItem(postId: postId),
       );
 
-  static List<MediaPost> getFavoriteTabPosts(FavoriteTab tab) {
-    return posts[tab].map((e) => PostManager.posts[e]).toList();
+  static List<MediaPost> getFavoriteTabPosts(FavoriteTab tab, PostType type) {
+    return posts[tab][type].map((e) => PostManager.posts[e]).toList();
   }
 
   static void handleMenuSelect(String selected, MediaPost post) {
@@ -96,9 +117,9 @@ class FavoriteManager {
       case 'favorite':
         {
           if (item.isFavorite) {
-            posts[FavoriteTab.favorite].remove(item.postId);
+            posts[FavoriteTab.favorite][post.type].remove(item.postId);
           } else {
-            posts[FavoriteTab.favorite].add(item.postId);
+            posts[FavoriteTab.favorite][post.type].add(item.postId);
           }
           item.isFavorite = !item.isFavorite;
           break;
@@ -107,7 +128,7 @@ class FavoriteManager {
         {
           // Удаляем из страницы, если она есть
           if (item.state != FavoriteState.none) {
-            posts[FavoriteTab.values[item.state.index]].remove(item.postId);
+            posts[FavoriteTab.values[item.state.index]][post.type].remove(item.postId);
           }
 
           // Получаем состояние новое сосотояние
@@ -115,7 +136,7 @@ class FavoriteManager {
 
           // Если новое состояние - не текущее, то добовляем на страницу
           if (item.state != newState) {
-            posts[FavoriteTab.values[newState.index]].add(item.postId);
+            posts[FavoriteTab.values[newState.index]][post.type].add(item.postId);
           }
 
           //Обновляем состояние
@@ -149,6 +170,12 @@ class FavoriteManager {
       ),
       CheckedPopupMenuItem<String>(
         checked:
+            _favoriteItems[post.id]?.state == FavoriteState.process ?? false,
+        child: Text('В процессе'),
+        value: FavoriteState.process.index.toString(),
+      ),
+      CheckedPopupMenuItem<String>(
+        checked:
             _favoriteItems[post.id]?.state == FavoriteState.completed ?? false,
         child: Text('Завершенное'),
         value: FavoriteState.completed.index.toString(),
@@ -157,8 +184,8 @@ class FavoriteManager {
   }
 }
 
-enum FavoriteState { future, completed, none }
-enum FavoriteTab { future, completed, favorite }
+enum FavoriteState { future, process, completed, none }
+enum FavoriteTab { future, process, completed, favorite }
 
 class FavoriteItem {
   bool isFavorite;

@@ -1,78 +1,48 @@
 import 'package:filmix_watch/bloc/favorite_manager.dart';
+import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/tiles/row_post_tile.dart';
 import 'package:flutter/material.dart';
 
 class PostFavoriteList extends StatefulWidget {
   final FavoriteTab tab;
+  final PostType type;
 
-  PostFavoriteList(this.tab);
+  PostFavoriteList(this.tab, this.type);
 
   @override
   _PostFavoriteListState createState() => _PostFavoriteListState();
 }
 
 class _PostFavoriteListState extends State<PostFavoriteList> {
-  // var count = 0;
-  // var lastCount = 0;
-  // var lastFirst = 0;
-  // var h = 275 + 8.0;
-  // Timer timer;
-  // var isScrool = true;
-
-  // ScrollController scrollController;
-
   @override
   void initState() {
     super.initState();
-
-    // scrollController = ScrollController();
-    // scrollController.addListener(scrollListener);
   }
-
-  // scrollListener() {
-  //   isScrool = true;
-  //   timer?.cancel();
-  //   timer = Timer(Duration(milliseconds: 500), normalize);
-  // }
-
-  // normalize() {
-  //   if (Settings.smartScroll &&
-  //       scrollController.positions.isNotEmpty &&
-  //       lastCount == 2) {
-  //     var indexLast = (scrollController.position.pixels * lastCount / h).ceil();
-  //     int firstLast = (indexLast - indexLast.floor() % lastCount);
-  //     var row = (firstLast / count);
-
-  //     var newPos = max(0.0, row * h);
-  //     scrollController.animateTo(
-  //       newPos,
-  //       duration: Duration(milliseconds: 250),
-  //       curve: Curves.easeInOut,
-  //     );
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: FavoriteManager.updateController,
       builder: (context, snapshot) {
-        var posts = FavoriteManager.getFavoriteTabPosts(widget.tab);
+        var posts = FavoriteManager.getFavoriteTabPosts(widget.tab, widget.type);
+
+        if (posts.isEmpty) {
+          return Center(child: Text('Список пуст'),);
+        }
 
         return ReorderableListView(
           padding: EdgeInsets.all(4),
           onReorder: (int oldIndex, int newIndex) {
-            if (newIndex >= FavoriteManager.posts[widget.tab].length) {
-              newIndex = FavoriteManager.posts[widget.tab].length - 1;
+            if (newIndex >= FavoriteManager.posts[widget.tab][widget.type].length) {
+              newIndex = FavoriteManager.posts[widget.tab][widget.type].length - 1;
             }
 
             if (oldIndex == newIndex) {
               return;
             }
 
-            int item = FavoriteManager.posts[widget.tab].removeAt(oldIndex);
-            FavoriteManager.posts[widget.tab].insert(newIndex, item);
+            int item = FavoriteManager.posts[widget.tab][widget.type].removeAt(oldIndex);
+            FavoriteManager.posts[widget.tab][widget.type].insert(newIndex, item);
             FavoriteManager.save();
           },
           children: [

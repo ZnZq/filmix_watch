@@ -1,3 +1,4 @@
+import 'package:filmix_watch/bloc/media_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/media/translate.dart';
 import 'package:filmix_watch/tiles/episode_tile.dart';
@@ -136,7 +137,10 @@ class _MediaExplorerState extends State<MediaExplorer> {
               );
               break;
             case 2:
-              child = EpisodeTile(navData.last[index]);
+              child = EpisodeTile(
+                navData.last[index],
+                postId: widget.post.id,
+              );
               break;
           }
 
