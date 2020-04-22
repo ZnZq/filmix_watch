@@ -1,12 +1,6 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:filmix_watch/bloc/favorite_manager.dart';
 import 'package:filmix_watch/pages/post_page.dart';
-import 'package:filmix_watch/settings.dart';
-import 'package:filmix_watch/tiles/post_tile.dart';
 import 'package:filmix_watch/tiles/row_post_tile.dart';
-import 'package:filmix_watch/widgets/post_grid_view.dart';
 import 'package:flutter/material.dart';
 
 class PostFavoriteList extends StatefulWidget {

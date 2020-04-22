@@ -22,9 +22,9 @@ class PostInfo extends StatelessWidget {
               PosterTile(
                 post: post,
                 hero: hero,
-                width: 148,
+                imageWidth: 148,
+                imageHeight: 225,
                 showAdded: false,
-                contextMenu: false,
               ),
               _buildPostInfo(context),
             ],

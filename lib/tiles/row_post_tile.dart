@@ -34,7 +34,7 @@ class RowPostTile extends StatelessWidget {
           PosterTile(
             post: post,
             hero: hero,
-            width: 120,
+            imageWidth: 120,
             imageHeight: 175,
             showAdded: false,
             showTime: false,

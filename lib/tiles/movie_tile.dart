@@ -1,5 +1,4 @@
 import 'package:filmix_watch/filmix/media_post.dart';
-import 'package:filmix_watch/filmix/media/movie_translate.dart';
 import 'package:filmix_watch/filmix/media/quality.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

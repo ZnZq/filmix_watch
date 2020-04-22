@@ -1,6 +1,6 @@
 import 'package:filmix_watch/bloc/favorite_manager.dart';
+import 'package:filmix_watch/widgets/app_drawer.dart';
 import 'package:filmix_watch/widgets/post_favorite_grid.dart';
-import 'package:filmix_watch/widgets/post_grid_view.dart';
 import 'package:flutter/material.dart';
 
 class FavoritePage extends StatelessWidget {
@@ -23,6 +23,7 @@ class FavoritePage extends StatelessWidget {
             ],
           ),
         ),
+        drawer: AppDrawer(currentRoute: route),
         body: TabBarView(
           children: [
             PostFavoriteList(FavoriteTab.favorite),

@@ -35,7 +35,7 @@ class PostTile extends StatelessWidget {
               post: post,
               hero: hero,
               imageHeight: 250,
-              width: double.infinity,
+              imageWidth: double.infinity,
               number: number,
               showAdded: showAdded,
               showTime: showTime,

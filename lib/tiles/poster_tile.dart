@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 class PosterTile extends StatelessWidget {
   final MediaPost post;
   final String hero;
-  final double width, imageHeight, likeSize;
+  final double imageWidth, imageHeight, likeSize;
   final int number;
   final bool showType, showLike, showTime, showAdded, showQuality;
   final bool contextMenu;
@@ -18,7 +18,7 @@ class PosterTile extends StatelessWidget {
   PosterTile({
     @required this.post,
     @required this.hero,
-    this.width,
+    this.imageWidth,
     this.imageHeight,
     this.number,
     this.likeSize = 12,
@@ -37,7 +37,11 @@ class PosterTile extends StatelessWidget {
       builder: (_, __) {
         Widget child = Stack(
           children: [
-            _buildPostPoster(),
+            Container(
+              width: imageWidth,
+              height: imageHeight,
+              child: _buildPostPoster(),
+            ),
             _buildInfo(),
             if (Settings.showPostLike && showLike) _buildPostLike(),
           ],
@@ -154,7 +158,7 @@ class PosterTile extends StatelessWidget {
       tag: '$hero${post.id}poster',
       child: CachedNetworkImage(
         imageUrl: post.poster.original,
-        width: width,
+        width: imageWidth,
         height: imageHeight,
         fit: BoxFit.cover,
         placeholder: (context, url) =>

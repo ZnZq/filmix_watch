@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:filmix_watch/bloc/post_manager.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/media/movie_translate.dart';
@@ -12,6 +13,23 @@ import 'package:rxdart/rxdart.dart';
 
 class MediaManager {
   static final _manager = <int, MediaManager>{};
+  static Set<int> mediaIds = {};
+
+  static init() {
+    var box = Hive.box('filmix');
+    mediaIds = box.keys
+        .toList()
+        .where((key) => key.toString().startsWith('media-'))
+        .map((e) => int.parse(e.toString().split('-').last))
+        .toSet();
+  }
+
+  static remove(int postId) {
+    var box = Hive.box('filmix');
+    box.delete('media-$postId');
+    mediaIds.remove(postId);
+    MediaManager(PostManager.posts[postId]).controller.add([]);
+  }
 
   final MediaPost post;
   BehaviorSubject<List<Translate>> _controller;
@@ -28,7 +46,7 @@ class MediaManager {
 
   loadIfHasMedia() {
     var box = Hive.box('filmix');
-    if (box.containsKey(post.id)) {
+    if (box.containsKey('media-${post.id}')) {
       loadMedia();
     }
   }
@@ -37,8 +55,8 @@ class MediaManager {
     controller.add(null);
     if (wait > 0) await Future.delayed(Duration(milliseconds: wait));
     var box = Hive.box('filmix');
-    if (box.containsKey(post.id)) {
-      var json = box.get(post.id, defaultValue: '[]');
+    if (box.containsKey('media-${post.id}')) {
+      var json = box.get('media-${post.id}', defaultValue: '[]');
       var list = jsonDecode(json) as List;
       var transletes = <Translate>[];
       switch (post.type) {
@@ -83,7 +101,10 @@ class MediaManager {
       translates = result.data;
 
       var box = Hive.box('filmix');
-      box.put(post.id, jsonEncode(translates));
+      box.put('media-${post.id}', jsonEncode(translates));
+
+      PostManager.save(post);
+      mediaIds.add(post.id);
     }
 
     controller.add(translates);

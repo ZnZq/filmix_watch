@@ -1,6 +1,7 @@
 import 'package:filmix_watch/bloc/auth_manager.dart';
 import 'package:filmix_watch/bloc/favorite_manager.dart';
 import 'package:filmix_watch/bloc/filter_manager.dart';
+import 'package:filmix_watch/bloc/media_manager.dart';
 import 'package:filmix_watch/bloc/post_manager.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
@@ -28,6 +29,7 @@ void main() async {
         if (snapshot.hasData) {
           Settings.load();
           PostManager.init();
+          MediaManager.init();
           FavoriteManager.init();
           AuthManager.init();
           FilterManager.init();

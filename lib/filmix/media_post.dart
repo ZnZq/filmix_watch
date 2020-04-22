@@ -1,5 +1,4 @@
 import 'package:filmix_watch/filmix/poster.dart';
-import 'package:rxdart/rxdart.dart';
 
 class MediaPost {
   int id, like, dislike;
@@ -8,7 +7,6 @@ class MediaPost {
       originName,
       genre,
       year,
-      // translate,
       description,
       date,
       added,
