@@ -19,7 +19,7 @@ class PostGrid extends StatefulWidget {
   PostGridState createState() => PostGridState();
 }
 
-class PostGridState extends State<PostGrid> {
+class PostGridState extends State<PostGrid> with AutomaticKeepAliveClientMixin<PostGrid> {
   var count = 0;
   var lastCount = 0;
   var lastFirst = 0;
@@ -168,4 +168,7 @@ class PostGridState extends State<PostGrid> {
 
     return [row.toInt(), first.toInt()];
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

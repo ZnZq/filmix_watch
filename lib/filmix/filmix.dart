@@ -615,7 +615,7 @@ class Filmix {
         var episodes = <Episode>[];
         for (var episodeMap in seasonMap['folder']) {
           var episodeTitle = episodeMap['title'];
-          var episodeId = episodeMap['id'];
+          // var episodeId = episodeMap['id'];
           var episodeFiles = episodeMap['file'].split(',');
           var qualities = <Quality>[];
 

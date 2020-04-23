@@ -35,7 +35,7 @@ class PostGridView extends StatefulWidget {
 }
 
 class _PostGridViewState extends State<PostGridView>
-    with AutomaticKeepAliveClientMixin<PostGridView> {
+   /* with AutomaticKeepAliveClientMixin<PostGridView> */{
   bool isScrool = true;
   Timer timer;
 
@@ -76,6 +76,6 @@ class _PostGridViewState extends State<PostGridView>
     );
   }
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 }

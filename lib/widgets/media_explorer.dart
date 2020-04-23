@@ -1,5 +1,3 @@
-import 'package:filmix_watch/bloc/media_manager.dart';
-import 'package:filmix_watch/filmix/media/episode.dart';
 import 'package:filmix_watch/filmix/media/serial_translate.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/media/translate.dart';

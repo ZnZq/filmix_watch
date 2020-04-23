@@ -1,5 +1,4 @@
 import 'package:filmix_watch/bloc/favorite_manager.dart';
-import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/widgets/app_drawer.dart';
 import 'package:filmix_watch/widgets/post_favorite_list.dart';
 import 'package:flutter/material.dart';
