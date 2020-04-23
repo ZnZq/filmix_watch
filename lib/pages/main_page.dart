@@ -1,4 +1,5 @@
 import 'package:filmix_watch/filmix/enums.dart';
+import 'package:filmix_watch/pages/favorite_page.dart';
 import 'package:filmix_watch/pages/search_page.dart';
 import 'package:filmix_watch/widgets/app_drawer.dart';
 import 'package:filmix_watch/widgets/post_grid.dart';
@@ -30,6 +31,12 @@ class MainPage extends StatelessWidget {
               icon: Icon(Icons.search),
               onPressed: () {
                 Navigator.pushNamed(context, SearchPage.route);
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.star_border),
+              onPressed: () {
+                Navigator.pushNamed(context, FavoritePage.route);
               },
             ),
           ],

@@ -36,6 +36,8 @@ class Filmix {
     requested_url:  filmy/c11-c18-c22-c28-c112
   */
 
+  static final String mainUrl = 'https://filmix.co';
+
   static Map<String, String> getHeader(
       {int perPageNews = 60, Map<String, String> cookie = const {}}) {
     return {
@@ -62,7 +64,7 @@ class Filmix {
   static Future<String> auth(String login, String password) async {
     try {
       var response = await http.post(
-        'https://filmix.co/engine/ajax/user_auth.php',
+        '$mainUrl/engine/ajax/user_auth.php',
         body: {
           'login_name': login,
           'login_password': password,
@@ -104,7 +106,7 @@ class Filmix {
   static Future<bool> getUser(String userId, String password) async {
     try {
       var response = await http.get(
-        'https://filmix.co/my_news',
+        '$mainUrl/my_news',
         headers: {'cookie': 'dle_user_id=$userId; dle_password=$password'},
       );
 
@@ -128,7 +130,7 @@ class Filmix {
         password: password,
         name: login.querySelector('.user-name').text.trim(),
         avatar: avatar == '/templates/Filmix/dleimages/noavatar.png'
-            ? 'https://filmix.co$avatar'
+            ? '$mainUrl$avatar'
             : avatar,
         profie: login.querySelector('.user-profile').attributes['href'],
       );
@@ -160,7 +162,7 @@ class Filmix {
   static Future<Result<List<MediaPost>>> search2(String text) async {
     try {
       var response = await http.post(
-        'https://filmix.co/engine/ajax/sphinx_search.php',
+        '$mainUrl/engine/ajax/sphinx_search.php',
         headers: getHeader(),
         body: {'story': text},
       );
@@ -186,7 +188,7 @@ class Filmix {
         return Result.error('Нет интернета');
 
       var response = await http.get(
-        'https://filmix.co/api/v2/suggestions?search_word=${Uri.encodeFull(text.replaceAll(' ', '+'))}',
+        '$mainUrl/api/v2/suggestions?search_word=${Uri.encodeFull(text.replaceAll(' ', '+'))}',
         headers: getHeader(),
       );
 
@@ -288,8 +290,8 @@ class Filmix {
 
       var response = await http.get(
         needDecode
-            ? 'https://filmix.co/page/$page/'
-            : 'https://filmix.co/loader.php?requested_url=%2F',
+            ? '$mainUrl/page/$page/'
+            : '$mainUrl/loader.php?requested_url=%2F',
         headers: getHeader(cookie: _latestType(type)),
       );
 
@@ -334,7 +336,7 @@ class Filmix {
       page = max(1, page);
 
       var response = await http.post(
-        'https://filmix.co/loader.php?${_genArgs(page, filter)}',
+        '$mainUrl/loader.php?${_genArgs(page, filter)}',
         body: {
           'dlenewssortby': filter.sortType.toString().split('.').last,
           'dledirection': filter.sortMode == SortMode.up_down ? 'desc' : 'asc',
@@ -480,7 +482,7 @@ class Filmix {
   static Future<Result<Map>> _getData(int id) async {
     try {
       var response = await http.post(
-        'https://filmix.co/api/movies/player_data',
+        '$mainUrl/api/movies/player_data',
         body: {'post_id': '$id', 'showfull': 'true'},
         headers: getHeader(),
       );

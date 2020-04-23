@@ -10,63 +10,70 @@ import 'package:rxdart/rxdart.dart';
 class FavoriteManager {
   static Map<int, FavoriteItem> _favoriteItems;
 
-  static Map<FavoriteTab, Map<PostType, List<int>>> posts;
+  static Map<FavoriteTab, List<int>> posts;
 
   static BehaviorSubject _controller = BehaviorSubject();
   static BehaviorSubject get updateController => _controller;
 
-  static init() {
+  static _initVars() {
     _favoriteItems = {};
     posts = {
-      FavoriteTab.favorite: <PostType, List<int>>{
-        PostType.serial: [],
-        PostType.movie: [],
-      },
-      FavoriteTab.future: <PostType, List<int>>{
-        PostType.serial: [],
-        PostType.movie: [],
-      },
-      FavoriteTab.process: <PostType, List<int>>{
-        PostType.serial: [],
-        PostType.movie: [],
-      },
-      FavoriteTab.completed: <PostType, List<int>>{
-        PostType.serial: [],
-        PostType.movie: [],
-      },
+      FavoriteTab.favorite: [],
+      FavoriteTab.future: [],
+      FavoriteTab.process: [],
+      FavoriteTab.completed: [],
     };
+  }
+
+  static init() {
+    _initVars();
 
     var box = Hive.box('filmix');
 
     var list = jsonDecode(box.get('favorites', defaultValue: '[]')) as List;
     var fav = list.map((e) => FavoriteItem.fromJson(e)).toList();
 
-    for (var type in PostType.values) {
-      posts[FavoriteTab.favorite][type] =
-          (box.get('${FavoriteTab.favorite}-$type', defaultValue: <int>[])
-                  as List)
-              .cast<int>()
-              .toList();
-      posts[FavoriteTab.future][type] =
-          (box.get('${FavoriteTab.future}-$type', defaultValue: <int>[])
-                  as List)
-              .cast<int>()
-              .toList();
-      posts[FavoriteTab.process][type] =
-          (box.get('${FavoriteTab.process}-$type', defaultValue: <int>[])
-                  as List)
-              .cast<int>()
-              .toList();
-      posts[FavoriteTab.completed][type] =
-          (box.get('${FavoriteTab.completed}-$type', defaultValue: <int>[])
-                  as List)
-              .cast<int>()
-              .toList();
-    }
+    posts[FavoriteTab.favorite] =
+        (box.get('${FavoriteTab.favorite}', defaultValue: <int>[]) as List)
+            .cast<int>()
+            .toList();
+    posts[FavoriteTab.future] =
+        (box.get('${FavoriteTab.future}', defaultValue: <int>[]) as List)
+            .cast<int>()
+            .toList();
+    posts[FavoriteTab.process] =
+        (box.get('${FavoriteTab.process}', defaultValue: <int>[]) as List)
+            .cast<int>()
+            .toList();
+    posts[FavoriteTab.completed] =
+        (box.get('${FavoriteTab.completed}', defaultValue: <int>[]) as List)
+            .cast<int>()
+            .toList();
 
     for (var f in fav) {
       _favoriteItems[f.postId] = f;
     }
+  }
+
+  static clear() {
+    _initVars();
+
+    var box = Hive.box('filmix');
+
+    box.delete('favorites');
+
+    for (var tab in FavoriteTab.values) {
+      var viewRegex = RegExp('^$tab');
+
+      for (var key in box.keys.toList()) {
+        var m = viewRegex.firstMatch('$key');
+        if (m != null) {
+          box.delete('$key');
+        }
+      }
+    }
+
+    updateController.add(null);
   }
 
   static save() {
@@ -74,12 +81,10 @@ class FavoriteManager {
 
     var list = _favoriteItems.entries.map((e) => e.value.toJson()).toList();
 
-    for (var type in PostType.values) {
-      box.put('${FavoriteTab.favorite}-$type', posts[FavoriteTab.favorite][type]);
-      box.put('${FavoriteTab.future}-$type', posts[FavoriteTab.future][type]);
-      box.put('${FavoriteTab.process}-$type', posts[FavoriteTab.future][type]);
-      box.put('${FavoriteTab.completed}-$type', posts[FavoriteTab.completed][type]);
-    }
+    box.put('${FavoriteTab.favorite}', posts[FavoriteTab.favorite]);
+    box.put('${FavoriteTab.future}', posts[FavoriteTab.future]);
+    box.put('${FavoriteTab.process}', posts[FavoriteTab.process]);
+    box.put('${FavoriteTab.completed}', posts[FavoriteTab.completed]);
 
     box.put('favorites', jsonEncode(list));
     updateController.add(null);
@@ -104,8 +109,8 @@ class FavoriteManager {
         () => FavoriteItem(postId: postId),
       );
 
-  static List<MediaPost> getFavoriteTabPosts(FavoriteTab tab, PostType type) {
-    return posts[tab][type].map((e) => PostManager.posts[e]).toList();
+  static List<MediaPost> getFavoriteTabPosts(FavoriteTab tab) {
+    return posts[tab].map((e) => PostManager.posts[e]).toList();
   }
 
   static void handleMenuSelect(String selected, MediaPost post) {
@@ -117,9 +122,9 @@ class FavoriteManager {
       case 'favorite':
         {
           if (item.isFavorite) {
-            posts[FavoriteTab.favorite][post.type].remove(item.postId);
+            posts[FavoriteTab.favorite].remove(item.postId);
           } else {
-            posts[FavoriteTab.favorite][post.type].add(item.postId);
+            posts[FavoriteTab.favorite].add(item.postId);
           }
           item.isFavorite = !item.isFavorite;
           break;
@@ -128,7 +133,7 @@ class FavoriteManager {
         {
           // Удаляем из страницы, если она есть
           if (item.state != FavoriteState.none) {
-            posts[FavoriteTab.values[item.state.index]][post.type].remove(item.postId);
+            posts[FavoriteTab.values[item.state.index]].remove(item.postId);
           }
 
           // Получаем состояние новое сосотояние
@@ -136,7 +141,7 @@ class FavoriteManager {
 
           // Если новое состояние - не текущее, то добовляем на страницу
           if (item.state != newState) {
-            posts[FavoriteTab.values[newState.index]][post.type].add(item.postId);
+            posts[FavoriteTab.values[newState.index]].add(item.postId);
           }
 
           //Обновляем состояние

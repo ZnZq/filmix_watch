@@ -6,9 +6,8 @@ import 'package:flutter/material.dart';
 
 class PostFavoriteList extends StatefulWidget {
   final FavoriteTab tab;
-  final PostType type;
 
-  PostFavoriteList(this.tab, this.type);
+  PostFavoriteList(this.tab);
 
   @override
   _PostFavoriteListState createState() => _PostFavoriteListState();
@@ -24,7 +23,7 @@ class _PostFavoriteListState extends State<PostFavoriteList> with AutomaticKeepA
     return StreamBuilder(
       stream: FavoriteManager.updateController,
       builder: (context, snapshot) {
-        var posts = FavoriteManager.getFavoriteTabPosts(widget.tab, widget.type);
+        var posts = FavoriteManager.getFavoriteTabPosts(widget.tab);
 
         if (posts.isEmpty) {
           return Center(child: Text('Список пуст'),);
@@ -33,16 +32,16 @@ class _PostFavoriteListState extends State<PostFavoriteList> with AutomaticKeepA
         return ReorderableListView(
           padding: EdgeInsets.all(4),
           onReorder: (int oldIndex, int newIndex) {
-            if (newIndex >= FavoriteManager.posts[widget.tab][widget.type].length) {
-              newIndex = FavoriteManager.posts[widget.tab][widget.type].length - 1;
+            if (newIndex >= FavoriteManager.posts[widget.tab].length) {
+              newIndex = FavoriteManager.posts[widget.tab].length - 1;
             }
 
             if (oldIndex == newIndex) {
               return;
             }
 
-            int item = FavoriteManager.posts[widget.tab][widget.type].removeAt(oldIndex);
-            FavoriteManager.posts[widget.tab][widget.type].insert(newIndex, item);
+            int item = FavoriteManager.posts[widget.tab].removeAt(oldIndex);
+            FavoriteManager.posts[widget.tab].insert(newIndex, item);
             FavoriteManager.save();
           },
           children: [

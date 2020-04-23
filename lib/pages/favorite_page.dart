@@ -13,8 +13,6 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  PostType selectedType = PostType.serial;
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -31,27 +29,52 @@ class _FavoritePageState extends State<FavoritePage> {
               Tab(text: 'Завершенное'),
             ],
           ),
+          actions: [
+            PopupMenuButton(
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  child: Text('Удалить все'),
+                  value: 'delete',
+                )
+              ],
+              onSelected: (selected) async {
+                if (selected == 'delete') {
+                  var result = await showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text('Удаление'),
+                      content: Text(
+                          'Вы действительно хотите удалить все из избранного?'),
+                      actions: [
+                        FlatButton(
+                          child: Text('Отмена'),
+                          onPressed: () => Navigator.pop(context, false),
+                        ),
+                        FlatButton(
+                          textColor: Colors.red,
+                          child: Text('Удалить'),
+                          onPressed: () => Navigator.pop(context, true),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (result) {
+                    FavoriteManager.clear();
+                  }
+                }
+              },
+            )
+          ],
         ),
         drawer: AppDrawer(currentRoute: FavoritePage.route),
         body: TabBarView(
           children: [
-            PostFavoriteList(FavoriteTab.favorite, selectedType),
-            PostFavoriteList(FavoriteTab.future, selectedType),
-            PostFavoriteList(FavoriteTab.process, selectedType),
-            PostFavoriteList(FavoriteTab.completed, selectedType),
+            PostFavoriteList(FavoriteTab.favorite),
+            PostFavoriteList(FavoriteTab.future),
+            PostFavoriteList(FavoriteTab.process),
+            PostFavoriteList(FavoriteTab.completed),
           ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: selectedType.index,
-          items: [
-            BottomNavigationBarItem(title: Text('Сериалы'), icon: Icon(Icons.movie)),
-            BottomNavigationBarItem(title: Text('Фильмы'), icon: Icon(Icons.local_movies)),
-          ],
-          onTap: (index) {
-            setState(() {
-              selectedType = PostType.values[index];
-            });
-          },
         ),
       ),
     );

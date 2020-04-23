@@ -1,6 +1,8 @@
 import 'package:filmix_watch/bloc/auth_manager.dart';
+import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthPage extends StatefulWidget {
   static final String route = '/auth';
@@ -62,6 +64,17 @@ class _AuthPageState extends State<AuthPage> {
                                   Navigator.pop(context);
                                 } else
                                   Fluttertoast.showToast(msg: result);
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlineButton(
+                              child: Text('Регистрация'),
+                              onPressed: () async {
+                                if (await canLaunch(Filmix.mainUrl)) {
+                                  await launch(Filmix.mainUrl);
+                                }
                               },
                             ),
                           ),

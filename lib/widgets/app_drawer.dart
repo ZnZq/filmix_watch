@@ -1,6 +1,7 @@
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/favorite_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
+import 'package:filmix_watch/pages/search_page.dart';
 import 'package:filmix_watch/pages/settings_page.dart';
 import 'package:filmix_watch/tiles/auth_tile.dart';
 import 'package:flutter/material.dart';
@@ -31,9 +32,16 @@ class _AppDrawerState extends State<AppDrawer> {
                 shrinkWrap: true,
                 children: [
                   _buildDrawerItemReplacePush(
-                      icon: Icons.home,
-                      text: MainPage.title,
-                      route: MainPage.route),
+                    icon: Icons.home,
+                    text: MainPage.title,
+                    route: MainPage.route,
+                  ),
+                  Divider(height: 0),
+                  _buildDrawerItemPush(
+                    icon: Icons.search,
+                    text: SearchPage.title,
+                    route: SearchPage.route,
+                  ),
                   Divider(height: 0),
                   _buildDrawerItemPush(
                     icon: Icons.star_border,
