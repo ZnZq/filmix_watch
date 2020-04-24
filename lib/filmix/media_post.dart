@@ -180,7 +180,7 @@ class MediaPost {
         // year: json['year'] ?? '',
         poster: Poster(json['poster']),
         type: PostType.values[json['type'] ?? 0],
-        items: Map<String, String>.from(json['items'])
+        items: Map<String, String>.from(json['items'] ?? <String, String>{})
       ),
     );
     // ..update(
