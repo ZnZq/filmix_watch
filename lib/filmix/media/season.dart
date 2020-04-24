@@ -1,4 +1,4 @@
-import 'package:filmix_watch/bloc/media_manager.dart';
+import 'package:filmix_watch/managers/media_manager.dart';
 
 import 'episode.dart';
 
@@ -9,6 +9,10 @@ class Season {
   double progress(int postId) {
     return episodes.where((ep) => MediaManager.getView(postId, ep.id)).length /
         episodes.length;
+  }
+
+  setAllView(int postId, bool view) {
+    episodes.forEach((ep) => MediaManager.setView(postId, ep, view));
   }
 
   Season({

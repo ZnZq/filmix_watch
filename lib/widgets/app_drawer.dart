@@ -1,5 +1,6 @@
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/favorite_page.dart';
+import 'package:filmix_watch/pages/history_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/search_page.dart';
 import 'package:filmix_watch/pages/settings_page.dart';
@@ -50,9 +51,16 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   Divider(height: 0),
                   _buildDrawerItemPush(
-                      icon: Icons.filter_drama,
-                      text: DataPage.title,
-                      route: DataPage.route),
+                    icon: Icons.filter_drama,
+                    text: DataPage.title,
+                    route: DataPage.route,
+                  ),
+                  Divider(height: 0),
+                  _buildDrawerItemPush(
+                    icon: Icons.watch_later,
+                    text: HistoryPage.title,
+                    route: HistoryPage.route,
+                  ),
                   Divider(height: 0),
                 ],
               ),

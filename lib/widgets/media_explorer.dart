@@ -3,6 +3,7 @@ import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/media/translate.dart';
 import 'package:filmix_watch/tiles/episode_tile.dart';
 import 'package:filmix_watch/tiles/movie_tile.dart';
+import 'package:filmix_watch/util.dart';
 import 'package:flutter/material.dart';
 
 class MediaExplorer extends StatefulWidget {
@@ -125,25 +126,47 @@ class _MediaExplorerState extends State<MediaExplorer> {
               break;
             case 1:
               // var episodes = navData.last[index].episodes as List<Episode>;
-              child = ListTile(
-                subtitle: LinearProgressIndicator(
-                  value: navData.last[index].progress(widget.post.id),
+              child = GestureDetector(
+                child: ListTile(
+                  subtitle: LinearProgressIndicator(
+                    value: navData.last[index].progress(widget.post.id),
+                  ),
+                  title: Text(navData.last[index].title),
+                  trailing: Icon(Icons.arrow_forward),
+                  onTap: () {
+                    nav.add(navData.last[index].title);
+                    setState(() {
+                      title = pages[2];
+                      navData.add(navData.last[index].episodes);
+                    });
+                  },
                 ),
-                title: Text(navData.last[index].title),
-                trailing: Icon(Icons.arrow_forward),
-                onTap: () {
-                  nav.add(navData.last[index].title);
-                  setState(() {
-                    title = pages[2];
-                    navData.add(navData.last[index].episodes);
-                  });
+                onLongPressStart: (details) async {
+                  var position = Util.getPosition(context, details);
+
+                  var selected = await showMenu(
+                    context: context,
+                    position: position,
+                    items: [
+                      CheckedPopupMenuItem(
+                        child: Text('Просмотренно'),
+                        value:
+                            navData.last[index].progress(widget.post.id) == 1.0,
+                      ),
+                    ],
+                  );
+
+                  if (selected != null) {
+                    navData.last[index].setAllView(widget.post.id, !selected);
+                    setState(() {});
+                  }
                 },
               );
               break;
             case 2:
               child = EpisodeTile(
                 navData.last[index],
-                postId: widget.post.id,
+                post: widget.post,
               );
               break;
           }

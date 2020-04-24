@@ -18,13 +18,13 @@ class MovieTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.only(left: 16, right: 16),
-      leading: Container(
-        width: 70,
-        height: 40,
-        alignment: Alignment.center,
-        child: Text(quality.quality),
-        decoration: BoxDecoration(color: Colors.orange),
-      ),
+      // leading: Container(
+      //   width: 70,
+      //   height: 40,
+      //   alignment: Alignment.center,
+      //   child: Text(quality.quality),
+      //   decoration: BoxDecoration(color: Colors.orange),
+      // ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -47,6 +47,27 @@ class MovieTile extends StatelessWidget {
         mediaPost.name,
         softWrap: false,
         overflow: TextOverflow.fade,
+      ),
+      subtitle: FutureBuilder(
+        future: quality.getSize(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Text('${quality.quality} (${snapshot.data})');
+          }
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(quality.quality),
+              SizedBox(width: 8),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

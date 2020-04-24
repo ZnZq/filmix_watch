@@ -1,6 +1,6 @@
-import 'package:filmix_watch/bloc/filter_manager.dart';
-import 'package:filmix_watch/bloc/media_manager.dart';
-import 'package:filmix_watch/bloc/post_manager.dart';
+import 'package:filmix_watch/managers/filter_manager.dart';
+import 'package:filmix_watch/managers/media_manager.dart';
+import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/pages/post_page.dart';

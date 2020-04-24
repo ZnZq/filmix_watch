@@ -1,4 +1,4 @@
-import 'package:filmix_watch/bloc/media_manager.dart';
+import 'package:filmix_watch/managers/media_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/widgets/media_view.dart';
 import 'package:filmix_watch/widgets/post_info.dart';

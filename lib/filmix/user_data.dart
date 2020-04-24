@@ -3,6 +3,7 @@ class UserData {
   final String name;
   final String profie;
   final String avatar;
+  final bool isPro;
 
   final String password;
 
@@ -11,6 +12,7 @@ class UserData {
     this.name,
     this.profie,
     this.avatar,
+    this.isPro,
     this.password,
   });
 }

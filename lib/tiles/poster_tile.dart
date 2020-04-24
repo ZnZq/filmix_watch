@@ -1,9 +1,10 @@
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:filmix_watch/bloc/favorite_manager.dart';
+import 'package:filmix_watch/managers/favorite_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/settings.dart';
+import 'package:filmix_watch/util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -51,24 +52,7 @@ class PosterTile extends StatelessWidget {
             ? GestureDetector(
                 child: child,
                 onLongPressStart: (details) {
-                  final RenderBox referenceBox = context.findRenderObject();
-                  var tapPosition =
-                      referenceBox.globalToLocal(details.globalPosition);
-
-                  final RenderBox button =
-                      context.findRenderObject() as RenderBox;
-                  final RenderBox overlay = Overlay.of(context)
-                      .context
-                      .findRenderObject() as RenderBox;
-                  final RelativeRect position = RelativeRect.fromRect(
-                    Rect.fromPoints(
-                      button.localToGlobal(tapPosition, ancestor: overlay),
-                      button.localToGlobal(button.size.bottomRight(Offset.zero),
-                          ancestor: overlay),
-                    ),
-                    Offset.zero & overlay.size,
-                  );
-
+                  var position = Util.getPosition(context, details);
                   FavoriteManager.showFavoriteMenu(context, position, post);
                 },
               )

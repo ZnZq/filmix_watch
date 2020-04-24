@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:filmix_watch/bloc/post_manager.dart';
+import 'package:filmix_watch/filmix/media/episode.dart';
+import 'package:filmix_watch/managers/history_manager.dart';
+import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/filmix/media/movie_translate.dart';
@@ -38,6 +40,7 @@ class MediaManager {
     }
 
     mediaIds.remove(postId);
+    HistoryManager.removePost(postId);
     MediaManager(PostManager.posts[postId]).controller.add([]);
   }
 
@@ -119,16 +122,29 @@ class MediaManager {
     controller.add(translates);
   }
 
-  static setView(int postId, String episodeId, bool view) {
+  static setView(int postId, Episode episode, bool view,
+      {bool saveToHistory = false}) {
     var box = Hive.box('filmix');
     if (view) {
-      box.put('view-$postId-$episodeId', view);
+      box.put('view-$postId-${episode.id}', view);
     } else {
-      box.delete('view-$postId-$episodeId');
+      box.delete('view-$postId-${episode.id}');
+    }
+
+    if (saveToHistory) {
+      if (view) {
+        HistoryManager.addEpisode(HistoryItem(
+          postId: postId,
+          title: episode.title,
+          id: episode.id,
+        ));
+      } else {
+        HistoryManager.removeEpisode(postId, episode.id);
+      }
     }
   }
 
-  static bool getView(int postId, String episodeId) {
+  static bool getView(int postId, int episodeId) {
     var box = Hive.box('filmix');
     return box.get('view-$postId-$episodeId', defaultValue: false);
   }

@@ -1,5 +1,7 @@
-import 'package:filmix_watch/bloc/media_manager.dart';
+import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/managers/media_manager.dart';
 import 'package:filmix_watch/filmix/media/episode.dart';
+import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,9 +10,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EpisodeTile extends StatefulWidget {
   final Episode episode;
-  final int postId;
+  final MediaPost post;
 
-  EpisodeTile(this.episode, {@required this.postId});
+  EpisodeTile(this.episode, {@required this.post});
 
   @override
   _EpisodeTileState createState() => _EpisodeTileState();
@@ -28,15 +30,17 @@ class _EpisodeTileState extends State<EpisodeTile> {
             padding: EdgeInsets.all(0),
             icon: Icon(
               Icons.remove_red_eye,
-              color: MediaManager.getView(widget.postId, widget.episode.id)
+              color: MediaManager.getView(widget.post.id, widget.episode.id)
                   ? Colors.white
                   : Colors.white30,
             ),
             onPressed: () {
+              PostManager.saveIfNotExist(widget.post);
               MediaManager.setView(
-                widget.postId,
-                widget.episode.id,
-                !MediaManager.getView(widget.postId, widget.episode.id),
+                widget.post.id,
+                widget.episode,
+                !MediaManager.getView(widget.post.id, widget.episode.id),
+                saveToHistory: true,
               );
               setState(() {});
             },
@@ -49,7 +53,13 @@ class _EpisodeTileState extends State<EpisodeTile> {
             ),
             onSelected: (link) async {
               if (await canLaunch(link)) {
-                MediaManager.setView(widget.postId, widget.episode.id, true);
+                PostManager.saveIfNotExist(widget.post);
+                MediaManager.setView(
+                  widget.post.id,
+                  widget.episode,
+                  true,
+                  saveToHistory: true,
+                );
                 setState(() {});
                 await launch(link);
               }
@@ -80,7 +90,27 @@ class _EpisodeTileState extends State<EpisodeTile> {
         for (var quality in widget.episode.qualities)
           PopupMenuItem(
             value: quality.url,
-            child: Text('$text ${quality.quality}'),
+            child: FutureBuilder(
+              future: quality.getSize(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text('$text ${quality.quality} (${snapshot.data})');
+                }
+
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('$text ${quality.quality}'),
+                    SizedBox(width: 8),
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(),
+                    ),
+                  ],
+                );
+              },
+            ),
           )
       ],
       onSelected: onSelected,

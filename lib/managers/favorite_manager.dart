@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:filmix_watch/bloc/post_manager.dart';
+import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

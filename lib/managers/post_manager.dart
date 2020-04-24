@@ -33,6 +33,12 @@ class PostManager {
     box.put('post-id-list', _postIds.toList());
   }
 
+  static saveIfNotExist(MediaPost post) {
+    if (!_postIds.contains(post.id)) {
+      save(post);
+    }
+  }
+
   static save([MediaPost post]) {
     var box = Hive.box('filmix');
 

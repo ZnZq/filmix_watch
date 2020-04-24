@@ -1,4 +1,4 @@
-import 'package:filmix_watch/bloc/auth_manager.dart';
+import 'package:filmix_watch/managers/auth_manager.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';

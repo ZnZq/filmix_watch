@@ -1,11 +1,13 @@
-import 'package:filmix_watch/bloc/auth_manager.dart';
-import 'package:filmix_watch/bloc/favorite_manager.dart';
-import 'package:filmix_watch/bloc/filter_manager.dart';
-import 'package:filmix_watch/bloc/media_manager.dart';
-import 'package:filmix_watch/bloc/post_manager.dart';
+import 'package:filmix_watch/managers/auth_manager.dart';
+import 'package:filmix_watch/managers/favorite_manager.dart';
+import 'package:filmix_watch/managers/filter_manager.dart';
+import 'package:filmix_watch/managers/history_manager.dart';
+import 'package:filmix_watch/managers/media_manager.dart';
+import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
 import 'package:filmix_watch/pages/favorite_page.dart';
+import 'package:filmix_watch/pages/history_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
 import 'package:filmix_watch/pages/post_page.dart';
 import 'package:filmix_watch/pages/search_page.dart';
@@ -31,6 +33,7 @@ void main() async {
           PostManager.init();
           MediaManager.init();
           FavoriteManager.init();
+          HistoryManager.init();
           AuthManager.init();
           FilterManager.init();
           return App();
@@ -64,6 +67,7 @@ class App extends StatelessWidget {
         PostPage.route: (_) => PostPage(),
         AuthPage.route: (_) => AuthPage(),
         FavoritePage.route: (_) => FavoritePage(),
+        HistoryPage.route: (_) => HistoryPage(),
       },
     );
   }
