@@ -122,24 +122,29 @@ class MediaManager {
     controller.add(translates);
   }
 
-  static setView(int postId, Episode episode, bool view,
-      {bool saveToHistory = false}) {
+  static setView(
+    int postId,
+    int episodeId,
+    bool view, {
+    bool saveToHistory = false,
+    String episodeTitle = '',
+  }) {
     var box = Hive.box('filmix');
     if (view) {
-      box.put('view-$postId-${episode.id}', view);
+      box.put('view-$postId-$episodeId', view);
     } else {
-      box.delete('view-$postId-${episode.id}');
+      box.delete('view-$postId-$episodeId');
     }
 
     if (saveToHistory) {
       if (view) {
         HistoryManager.addEpisode(HistoryItem(
           postId: postId,
-          title: episode.title,
-          id: episode.id,
+          title: episodeTitle,
+          id: episodeId,
         ));
       } else {
-        HistoryManager.removeEpisode(postId, episode.id);
+        HistoryManager.removeEpisode(postId, episodeId);
       }
     }
   }

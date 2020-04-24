@@ -101,6 +101,7 @@ class _MediaExplorerState extends State<MediaExplorer> {
               child = MovieTile(
                 quality: navData.last[index],
                 mediaPost: widget.post,
+                updateUi: setState,
               );
               break;
           }

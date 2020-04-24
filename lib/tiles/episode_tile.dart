@@ -35,14 +35,7 @@ class _EpisodeTileState extends State<EpisodeTile> {
                   : Colors.white30,
             ),
             onPressed: () {
-              PostManager.saveIfNotExist(widget.post);
-              MediaManager.setView(
-                widget.post.id,
-                widget.episode,
-                !MediaManager.getView(widget.post.id, widget.episode.id),
-                saveToHistory: true,
-              );
-              setState(() {});
+              _view(!MediaManager.getView(widget.post.id, widget.episode.id));
             },
           ),
           _buildPopupMenu(
@@ -53,15 +46,8 @@ class _EpisodeTileState extends State<EpisodeTile> {
             ),
             onSelected: (link) async {
               if (await canLaunch(link)) {
-                PostManager.saveIfNotExist(widget.post);
-                MediaManager.setView(
-                  widget.post.id,
-                  widget.episode,
-                  true,
-                  saveToHistory: true,
-                );
-                setState(() {});
-                await launch(link);
+                _view(true);
+                launch(link);
               }
             },
           ),
@@ -76,6 +62,18 @@ class _EpisodeTileState extends State<EpisodeTile> {
         ],
       ),
     );
+  }
+
+  void _view(bool view) {
+    PostManager.saveIfNotExist(widget.post);
+    MediaManager.setView(
+      widget.post.id,
+      widget.episode.id,
+      view,
+      saveToHistory: true,
+      episodeTitle: widget.episode.title
+    );
+    setState(() {});
   }
 
   PopupMenuButton<String> _buildPopupMenu({

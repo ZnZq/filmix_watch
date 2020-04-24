@@ -24,7 +24,7 @@ class Episode {
     var m = idRegex.firstMatch(title);
     if (m != null) {
       _id = int.parse('${m.groupNames.contains('season') ? m.namedGroup('season') : '0'}0${m.namedGroup('episode').padLeft(8, '0')}');
-      print('$title - $id');
+      // print('$title - $id');
     }
     qualities = json['qualities']?.map((e) => Quality.fromJson(e))?.cast<Quality>()?.toList() ?? [];
   }

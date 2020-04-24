@@ -12,7 +12,7 @@ class Season {
   }
 
   setAllView(int postId, bool view) {
-    episodes.forEach((ep) => MediaManager.setView(postId, ep, view));
+    episodes.forEach((ep) => MediaManager.setView(postId, ep.id, view));
   }
 
   Season({
