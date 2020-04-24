@@ -7,7 +7,7 @@ class PostTile extends StatelessWidget {
   final String hero;
   final int number;
 
-  final bool showAdded, showTime;
+  final bool showAdded, showTime, showLike, showQuality;
 
   PostTile(
     this.post,
@@ -15,6 +15,8 @@ class PostTile extends StatelessWidget {
     this.number,
     this.showAdded = true,
     this.showTime = true,
+    this.showLike = true,
+    this.showQuality = true,
   });
 
   @override
@@ -39,6 +41,8 @@ class PostTile extends StatelessWidget {
               number: number,
               showAdded: showAdded,
               showTime: showTime,
+              showLike: showLike,
+              showQuality: showQuality,
               likeSize: 16,
             ),
           ),

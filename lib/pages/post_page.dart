@@ -16,53 +16,74 @@ class PostPage extends StatelessWidget {
     hero = map['hero'].toString();
     var bloc = MediaManager(post);
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Hero(
-            tag: '$hero${post.id}name',
-            child: material(
-              Text(
+    return FutureBuilder<MediaPost>(
+      future: post.loadData(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
                 post.name,
                 style: TextStyle(fontSize: 18),
                 overflow: TextOverflow.fade,
                 softWrap: false,
               ),
             ),
-          ),
-          actions: [
-            StreamBuilder(
-              stream: bloc.controller,
-              initialData: bloc.controller.value,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData)
-                  return Center(child: CircularProgressIndicator());
-
-                return IconButton(
-                  icon: Icon(Icons.refresh),
-                  onPressed: () {
-                    bloc.refresh();
-                  },
-                );
-              },
+            body: Center(
+              child: snapshot.hasData ? Text('Ошибка загрузки данных') : CircularProgressIndicator(),
             ),
-            SizedBox(width: 8),
-          ],
-        ),
-        body: TabBarView(
-          children: [
-            PostInfo(post, hero),
-            MediaView(post),
-          ],
-        ),
-        bottomNavigationBar: TabBar(
-          tabs: [
-            Tab(text: 'Информация'),
-            Tab(text: 'Просмотр'),
-          ],
-        ),
-      ),
+          );
+        }
+
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Hero(
+                tag: '$hero${post.id}name',
+                child: material(
+                  Text(
+                    post.name,
+                    style: TextStyle(fontSize: 18),
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                  ),
+                ),
+              ),
+              actions: [
+                StreamBuilder(
+                  stream: bloc.controller,
+                  initialData: bloc.controller.value,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData)
+                      return Center(child: CircularProgressIndicator());
+
+                    return IconButton(
+                      icon: Icon(Icons.refresh),
+                      onPressed: () {
+                        bloc.refresh();
+                      },
+                    );
+                  },
+                ),
+                SizedBox(width: 8),
+              ],
+            ),
+            body: TabBarView(
+              children: [
+                PostInfo(post, hero),
+                MediaView(post),
+              ],
+            ),
+            bottomNavigationBar: TabBar(
+              tabs: [
+                Tab(text: 'Информация'),
+                Tab(text: 'Просмотр'),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

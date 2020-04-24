@@ -23,4 +23,4 @@ enum FilterType {
   rip,
 }
 
-enum LatestType { news, serial, movie, multserials, multmovies }
+enum LatestType { popularity, news, serial, movie, multserials, multmovies }

@@ -12,8 +12,11 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class PostGrid extends StatefulWidget {
   final LatestType latestType;
+  final bool showInfo;
 
-  PostGrid(this.latestType);
+  PostGrid(this.latestType, {
+    this.showInfo = true,
+  });
 
   @override
   PostGridState createState() => PostGridState();
@@ -93,7 +96,7 @@ class PostGridState extends State<PostGrid> with AutomaticKeepAliveClientMixin<P
             return PostGridView(
               refreshController: _refreshController,
               onRefresh: _onRefresh,
-              onLoading: _onLoading,
+              onLoading: widget.latestType != LatestType.popularity ? _onLoading : null,
               initialRefresh: LatestManager.data[widget.latestType].isEmpty,
               inRowCount: count,
               scrollController: scrollController,
@@ -106,6 +109,10 @@ class PostGridState extends State<PostGrid> with AutomaticKeepAliveClientMixin<P
                     e,
                     widget.latestType.toString(),
                     number: index + 1,
+                    showLike: widget.showInfo,
+                    showAdded: widget.showInfo,
+                    showTime: widget.showInfo,
+                    showQuality: widget.showInfo,
                   ),
                   onTap: () {
                     Navigator.pushNamed(context, PostPage.route,

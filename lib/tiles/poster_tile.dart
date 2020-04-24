@@ -69,7 +69,7 @@ class PosterTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (Settings.showPostQuality && showQuality) ...[
+          if (Settings.showPostQuality && post.quality.isNotEmpty && showQuality) ...[
             _buildQuality(),
             SizedBox(height: 3),
           ],
@@ -77,11 +77,11 @@ class PosterTile extends StatelessWidget {
             _buildPostAdded(),
             SizedBox(height: 3),
           ],
-          if (Settings.showPostTime && showTime) ...[
+          if (Settings.showPostTime && showTime && post.date.isNotEmpty) ...[
             _buildPostTime(),
             SizedBox(height: 3),
           ],
-          if (Settings.showPostType && showType) ...[
+          if (Settings.showPostType && showType && post.type != PostType.unknown) ...[
             _buildPostType(),
             SizedBox(height: 3),
           ],

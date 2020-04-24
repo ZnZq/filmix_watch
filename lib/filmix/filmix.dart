@@ -38,10 +38,13 @@ class Filmix {
 
   static final String mainUrl = 'https://filmix.co';
 
-  static Map<String, String> getHeader(
-      {int perPageNews = 60, Map<String, String> cookie = const {}}) {
+  static Map<String, String> getHeader({
+    int perPageNews = 60,
+    Map<String, String> cookie = const {},
+    bool xml = true,
+  }) {
     return {
-      'x-requested-with': 'XMLHttpRequest',
+      if (xml) 'x-requested-with': 'XMLHttpRequest',
       'cookie': {
         'dle_user_id': user?.id ?? '',
         'dle_password': user?.password ?? '',
@@ -323,6 +326,87 @@ class Filmix {
     }
   }
 
+  static isolatePopularityEntry(message) async {
+    ReceivePort port = ReceivePort();
+    message.send(port.sendPort);
+
+    var msg = await port.first;
+
+    String data = msg[0];
+    SendPort replyPort = msg[1];
+
+    var overviewRegex = RegExp(r'(?<overview><ul class="overview">.*?<\/ul>)',
+        multiLine: false);
+
+    data = data.replaceAll('\n', '');
+
+    data = overviewRegex.firstMatch(data).namedGroup('overview');
+
+    var body = decodeCp1251(data);
+
+    var document = html.parse(body);
+
+    var overview = document.querySelector('.overview');
+
+    var result =
+        overview.querySelectorAll('li a').map(parsePopularity).toList();
+
+    replyPort.send(result);
+  }
+
+  static var idRegex = RegExp(r'\/(?<id>\d+)-');
+
+  static Map parsePopularity(a) {
+    var link = a.attributes['href'];
+
+    var id = int.parse(idRegex.firstMatch(link).namedGroup('id'));
+
+    var p = a.querySelector('.film-poster');
+    var poster = p.attributes['src'];
+    var name = p.attributes['title'].trim();
+
+    return {
+      'id': id,
+      'url': link,
+      'poster': poster,
+      'name': name,
+    };
+  }
+
+  static Future<Result<PostResult>> popularity() async {
+    try {
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none)
+        return Result.error('Нет интернета');
+
+      var response = await http.get(mainUrl, headers: getHeader(xml: false));
+
+      if (response.statusCode != 200) {
+        return Result.error('Status ${response.statusCode}. ${response.body}');
+      }
+
+      ReceivePort receivePort = ReceivePort();
+
+      await Isolate.spawn(isolatePopularityEntry, receivePort.sendPort);
+
+      SendPort sendPort = await receivePort.first;
+
+      var result = await sendReceive(sendPort, response.body) as List;
+
+      var media = result.map((e) {
+        return MediaPost.fromJson(e);
+      }).toList();
+
+      return Result.data(PostResult(
+        countPages: 0,
+        currentPage: 0,
+        posts: media,
+      ));
+    } catch (e) {
+      return Result.error(e.toString());
+    }
+  }
+
   static Future<Result<PostResult>> posts({
     int page = 1,
     SearchSize searchSize = SearchSize.size60,
@@ -399,12 +483,12 @@ class Filmix {
       var originName =
           article.querySelector('.origin-name')?.text?.trim() ?? '';
 
-      var genre =
-          article.querySelector('.category .item-content')?.text?.trim() ?? '';
-      var year =
-          article.querySelector('.year .item-content')?.text?.trim() ?? '';
-      var translate =
-          article.querySelector('.translate .item-content')?.text?.trim() ?? '';
+      // var genre =
+      //     article.querySelector('.category .item-content')?.text?.trim() ?? '';
+      // var year =
+      //     article.querySelector('.year .item-content')?.text?.trim() ?? '';
+      // var translate =
+      //     article.querySelector('.translate .item-content')?.text?.trim() ?? '';
 
       var description = article.querySelector('p')?.text?.trim() ?? '';
 
@@ -412,11 +496,24 @@ class Filmix {
 
       var added = article.querySelector('.added-info')?.text?.trim() ?? '';
 
+      var itemList = article
+          .querySelectorAll('.item')
+          .where((element) => element.classes.length > 1)
+          .toList();
+
+      var items = <String, String>{};
+
+      for (var item in itemList) {
+        var key = item.querySelector('.lable').text.trim();
+        var value = item.querySelector('.item-content').text.trim();
+        items[key] = value;
+      }
+
       var type = added.isEmpty ? PostType.movie : PostType.serial;
       return {
         'id': id,
         'description': description,
-        'genre': genre,
+        // 'genre': genre,
         'like': like,
         'dislike': dislike,
         'added': added,
@@ -424,11 +521,12 @@ class Filmix {
         'name': name,
         'date': date,
         'originName': originName,
-        'translate': translate,
+        // 'translate': translate,
         'url': url,
-        'year': year,
+        // 'year': year,
         'poster': poster,
         'type': type,
+        'items': items,
       };
     }).toList();
   }
@@ -438,7 +536,7 @@ class Filmix {
         .map((e) => MediaPost(
               id: e['id'],
               description: e['description'],
-              genre: e['genre'],
+              // genre: e['genre'],
               like: e['like'],
               dislike: e['dislike'],
               added: e['added'],
@@ -448,9 +546,10 @@ class Filmix {
               originName: e['originName'],
               // translate: e['translate'],
               url: e['url'],
-              year: e['year'],
+              // year: e['year'],
               poster: Poster(e['poster']),
               type: e['type'],
+              items: e['items'],
             ))
         .toList();
   }
@@ -460,7 +559,7 @@ class Filmix {
         .map((e) => MediaPost(
               id: e['id'],
               description: e['description'],
-              genre: e['genre'],
+              // genre: e['genre'],
               like: e['like'],
               dislike: e['dislike'],
               added: e['added'],
@@ -470,9 +569,10 @@ class Filmix {
               originName: e['originName'],
               // translate: e['translate'],
               url: e['url'],
-              year: e['year'],
+              // year: e['year'],
               poster: Poster(e['poster']),
               type: e['type'],
+              items: e['items'],
             ))
         .toList();
   }
@@ -573,7 +673,6 @@ class Filmix {
       return Result.data(
         movieTranslationsList.map((e) => MovieTranslate.fromJson(e)).toList(),
       );
-
     } catch (e) {
       return Result.error(e.toString());
     }

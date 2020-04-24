@@ -48,10 +48,10 @@ class RowPostTile extends StatelessWidget {
                   _buildTitle(),
                   _buildOriginalName(context),
                   SizedBox(height: 4),
-                  if (post.year.isNotEmpty)
-                    _buildAttr('Год: ', post.year, context),
-                  if (post.genre.isNotEmpty)
-                    _buildAttr('Жанр: ', post.genre, context),
+                  // if (post.year.isNotEmpty)
+                  //   _buildAttr('Год: ', post.year, context),
+                  // if (post.genre.isNotEmpty)
+                  //   _buildAttr('Жанр: ', post.genre, context),
                   if (post.added.isNotEmpty)
                     _buildAttr('Последняя серия: ', post.added, context),
                 ],

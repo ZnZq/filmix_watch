@@ -39,10 +39,11 @@ class PostManager {
     }
   }
 
-  static save([MediaPost post]) {
+  static save([MediaPost post]) async {
     var box = Hive.box('filmix');
 
     if (post != null) {
+      await post.loadData();
       _postIds.add(post.id);
       posts[post.id] = post;
 

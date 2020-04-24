@@ -1,39 +1,33 @@
 import 'package:filmix_watch/filmix/enums.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/filmix/result.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 
 class LatestManager {
   static var streams = {
-    LatestType.news: BehaviorSubject<LatestState>.seeded(LatestState.loaded()),
-    LatestType.serial:
-        BehaviorSubject<LatestState>.seeded(LatestState.loaded()),
-    LatestType.movie: BehaviorSubject<LatestState>.seeded(LatestState.loaded()),
-    LatestType.multserials:
-        BehaviorSubject<LatestState>.seeded(LatestState.loaded()),
-    LatestType.multmovies:
-        BehaviorSubject<LatestState>.seeded(LatestState.loaded()),
+    for (var latest in LatestType.values)
+      latest: BehaviorSubject<LatestState>.seeded(LatestState.loaded())
   };
 
   static var data = {
-    LatestType.news: <MediaPost>[],
-    LatestType.serial: <MediaPost>[],
-    LatestType.movie: <MediaPost>[],
-    LatestType.multserials: <MediaPost>[],
-    LatestType.multmovies: <MediaPost>[],
+    for (var latest in LatestType.values)
+      latest: <MediaPost>[]
   };
 
   static var page = {
-    LatestType.news: 1,
-    LatestType.serial: 1,
-    LatestType.movie: 1,
-    LatestType.multserials: 1,
-    LatestType.multmovies: 1,
+    for (var latest in LatestType.values)
+      latest: 1
   };
 
   static Future refreshData(LatestType latestType) async {
-    var result = await Filmix.latest(latestType);
+    Result<PostResult> result;
+    if (latestType == LatestType.popularity) {
+      result = await Filmix.popularity();
+    } else {
+      result = await Filmix.latest(latestType);
+    }
     if (!result.hasError) {
       data[latestType] = result.data.posts;
       page[latestType] = 1;

@@ -107,8 +107,8 @@ class MediaManager {
         }
     }
 
-    if (result.hasError) {
-      Fluttertoast.showToast(msg: result.error);
+    if (result?.hasError ?? true) {
+      Fluttertoast.showToast(msg: result?.error ?? 'Неизвестный тип');
       translates = [];
     } else {
       translates = result.data;

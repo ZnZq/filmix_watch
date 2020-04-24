@@ -12,13 +12,15 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      initialIndex: 1,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           title: Text(title),
           bottom: TabBar(
             isScrollable: true,
             tabs: [
+              Tab(text: 'Популярное'),
               Tab(text: 'Новинки'),
               Tab(text: 'Сериалы'),
               Tab(text: 'Фильмы'),
@@ -44,6 +46,7 @@ class MainPage extends StatelessWidget {
         drawer: AppDrawer(),
         body: TabBarView(
           children: [
+            PostGrid(LatestType.popularity, showInfo: false),
             PostGrid(LatestType.news),
             PostGrid(LatestType.serial),
             PostGrid(LatestType.movie),

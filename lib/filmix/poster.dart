@@ -5,6 +5,7 @@ class Poster {
   String get name => _name;
 
   String get w40 => '$_url/thumbs/w40/$_name';
+  String get w160 => '$_url/thumbs/w160/$_name';
   String get w220 => '$_url/thumbs/w220/$_name';
   String get original => '$_url/orig/$_name';
 

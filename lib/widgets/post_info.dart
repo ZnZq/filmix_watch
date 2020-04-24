@@ -1,6 +1,7 @@
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/tiles/poster_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class PostInfo extends StatelessWidget {
   final MediaPost post;
@@ -25,13 +26,18 @@ class PostInfo extends StatelessWidget {
                 imageWidth: 148,
                 imageHeight: 225,
                 showAdded: false,
+                showQuality: false,
+                showTime: false,
               ),
               _buildPostInfo(context),
             ],
           ),
           SizedBox(height: 4),
           if (post.description?.isNotEmpty ?? false)
-            _buildAttr('Описание: ', post.description, context),
+            _buildAttr('Описание:', post.description, context),
+
+          for (var item in post.items.entries)
+            _buildAttr(item.key, item.value, context)
         ],
       ),
     );
@@ -49,10 +55,10 @@ class PostInfo extends StatelessWidget {
               _buildTitle(),
               SizedBox(height: 4),
             ],
-            if (post.year?.isNotEmpty ?? false)
-              _buildAttr('Год: ', post.year, context),
-            if (post.genre?.isNotEmpty ?? false)
-              _buildAttr('Жанр: ', post.genre, context),
+            if (post.date?.isNotEmpty ?? false)
+              _buildAttr('Обновлено: ', post.date, context),
+            if (post.quality?.isNotEmpty ?? false)
+              _buildAttr('Качество: ', post.quality, context),
             if (post.added?.isNotEmpty ?? false)
               _buildAttr(
                 'Последняя серия: ',
@@ -89,7 +95,7 @@ class PostInfo extends StatelessWidget {
           TextSpan(
             style: TextStyle(fontSize: 15),
             children: [
-              TextSpan(text: name),
+              TextSpan(text: '$name '),
               TextSpan(
                 text: value,
                 style:
