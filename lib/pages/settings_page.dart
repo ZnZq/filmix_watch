@@ -1,4 +1,6 @@
+import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:filmix_watch/settings.dart';
+import 'package:filmix_watch/tiles/mirror_tile.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -17,52 +19,69 @@ class SettingsPage extends StatelessWidget {
           return ListView(
             shrinkWrap: true,
             children: [
-              ListTile(title: Center(child: Text('Настройки главной страницы'))),
-              Divider(height: 0),
-              _switch(
-                'Умный скролл',
-                Settings.smartScroll,
-                (value) => Settings.smartScroll = value,
+              ExpansionTile(
+                title: Text('Настройки главной страницы'),
+                children: [
+                  _switch(
+                    'Умный скролл',
+                    Settings.smartScroll,
+                    (value) => Settings.smartScroll = value,
+                  ),
+                ],
               ),
-              Divider(height: 0),
-              ListTile(title: Center(child: Text('Настройки постера'))),
-              Divider(height: 0),
-              _switch(
-                'Отображать качество',
-                Settings.showPostQuality,
-                (value) => Settings.showPostQuality = value,
+              ExpansionTile(
+                title: Text('Настройки постера'),
+                children: [
+                  _switch(
+                    'Отображать качество',
+                    Settings.showPostQuality,
+                    (value) => Settings.showPostQuality = value,
+                  ),
+                  Divider(height: 0),
+                  _switch(
+                    'Отображать последнюю серию',
+                    Settings.showPostAdded,
+                    (value) => Settings.showPostAdded = value,
+                  ),
+                  Divider(height: 0),
+                  _switch(
+                    'Отображать время добавления',
+                    Settings.showPostTime,
+                    (value) => Settings.showPostTime = value,
+                  ),
+                  Divider(height: 0),
+                  _switch(
+                    'Отображать тип материала',
+                    Settings.showPostType,
+                    (value) => Settings.showPostType = value,
+                  ),
+                  Divider(height: 0),
+                  _switch(
+                    'Отображать позицию',
+                    Settings.showPostNumber,
+                    (value) => Settings.showPostNumber = value,
+                  ),
+                  Divider(height: 0),
+                  _switch(
+                    'Отображать рейтинг',
+                    Settings.showPostLike,
+                    (value) => Settings.showPostLike = value,
+                  ),
+                ],
               ),
-              Divider(height: 0),
-              _switch(
-                'Отображать последнюю серию',
-                Settings.showPostAdded,
-                (value) => Settings.showPostAdded = value,
+              StreamBuilder(
+                stream: MirrorManager.updateController,
+                builder: (context, snapshot) {
+                  return ExpansionTile(
+                    title: Text('Зеркала'),
+                    subtitle: Text('Текущее зеркало: ${MirrorManager.currentMirror}'),
+                    children: [
+                      for (var mirror in MirrorManager.mirrors) 
+                        MirrorTile(mirror)
+                    ],
+                  );
+                },
               ),
-              Divider(height: 0),
-              _switch(
-                'Отображать время добавления',
-                Settings.showPostTime,
-                (value) => Settings.showPostTime = value,
-              ),
-              Divider(height: 0),
-              _switch(
-                'Отображать тип материала',
-                Settings.showPostType,
-                (value) => Settings.showPostType = value,
-              ),
-              Divider(height: 0),
-              _switch(
-                'Отображать позицию',
-                Settings.showPostNumber,
-                (value) => Settings.showPostNumber = value,
-              ),
-              Divider(height: 0),
-              _switch(
-                'Отображать рейтинг',
-                Settings.showPostLike,
-                (value) => Settings.showPostLike = value,
-              ),
-              Divider(height: 0),
             ],
           );
         },

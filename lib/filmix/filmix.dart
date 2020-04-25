@@ -13,6 +13,7 @@ import 'package:filmix_watch/filmix/media/serial_translate.dart';
 import 'package:filmix_watch/filmix/poster.dart';
 import 'package:filmix_watch/filmix/result.dart';
 import 'package:filmix_watch/filmix/user_data.dart';
+import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:hive/hive.dart';
 import 'package:html/dom.dart';
 
@@ -36,7 +37,7 @@ class Filmix {
     requested_url:  filmy/c11-c18-c22-c28-c112
   */
 
-  static final String mainUrl = 'https://filmix.co';
+  static String get mainUrl => 'https://${MirrorManager.currentMirror}';
 
   static Map<String, String> getHeader({
     int perPageNews = 60,

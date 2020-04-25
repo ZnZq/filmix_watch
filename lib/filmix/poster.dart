@@ -1,5 +1,7 @@
+import 'package:filmix_watch/managers/mirror_manager.dart';
+
 class Poster {
-  static final String _url = 'https://thumbs.filmix.co/posters'; 
+  static String get _url => 'https://thumbs.${MirrorManager.currentMirror}/posters'; 
   static final RegExp regex = RegExp(r'\/{0,1}(?<name>[\w-]+\.jpg)');
   String _name;
   String get name => _name;

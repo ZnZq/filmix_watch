@@ -3,6 +3,7 @@ import 'package:filmix_watch/managers/favorite_manager.dart';
 import 'package:filmix_watch/managers/filter_manager.dart';
 import 'package:filmix_watch/managers/history_manager.dart';
 import 'package:filmix_watch/managers/media_manager.dart';
+import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
@@ -29,6 +30,7 @@ void main() async {
       future: Hive.openBox('filmix'),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          MirrorManager.init();
           Settings.load();
           PostManager.init();
           MediaManager.init();
