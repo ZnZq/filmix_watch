@@ -13,10 +13,8 @@ class PostFavoriteList extends StatefulWidget {
 }
 
 class _PostFavoriteListState extends State<PostFavoriteList> with AutomaticKeepAliveClientMixin<PostFavoriteList> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  var scrollController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -29,6 +27,7 @@ class _PostFavoriteListState extends State<PostFavoriteList> with AutomaticKeepA
         }
 
         return ReorderableListView(
+          scrollController: scrollController,
           padding: EdgeInsets.all(4),
           onReorder: (int oldIndex, int newIndex) {
             if (newIndex >= FavoriteManager.posts[widget.tab].length) {
@@ -46,7 +45,7 @@ class _PostFavoriteListState extends State<PostFavoriteList> with AutomaticKeepA
           children: [
             for (var post in posts)
               GestureDetector(
-                key: ValueKey(post.id),
+                key: ValueKey('${post.id}-${widget.tab}'),
                 child: RowPostTile(
                   post,
                   hero: widget.tab.toString(),
