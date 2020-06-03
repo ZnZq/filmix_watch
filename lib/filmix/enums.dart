@@ -1,15 +1,15 @@
-extension on SortMode {
-  String get mode {
-    switch (this) {
-      case SortMode.up_down:
-        return 'desc';
-      case SortMode.down_up:
-        return 'asc';
-      default:
-        return '';
-    }
-  }
-}
+// extension on SortMode {
+//   String get mode {
+//     switch (this) {
+//       case SortMode.up_down:
+//         return 'desc';
+//       case SortMode.down_up:
+//         return 'asc';
+//       default:
+//         return '';
+//     }
+//   }
+// }
 
 enum SortType { date, year, rating, news_read, comm_num, title }
 

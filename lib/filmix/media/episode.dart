@@ -15,7 +15,7 @@ class Episode {
 
   // static final _idRegex = RegExp(r'[а-яА-Я\s]');
   // static final idRegex = RegExp(r'[^\d]+');
-  static var idRegex = RegExp(r'Серия\s{0,}(?<episode>\d+)\s{0,}(\(Сезон\s(?<season>\d+)\)){0,}');
+  static var idRegex = RegExp(r'Сери[яи]\s{0,}(?<episode>[\d-]+)\s{0,}(\(Сезон\s(?<season>\d+)\)){0,}');
 
   Episode.fromJson(Map<String, dynamic> json) {
     title = json['title'];
@@ -23,7 +23,7 @@ class Episode {
     // _id = int.parse(title.replaceAll(idRegex, '').split('').reversed.join());
     var m = idRegex.firstMatch(title);
     if (m != null) {
-      _id = int.parse('${m.groupNames.contains('season') ? m.namedGroup('season') : '0'}0${m.namedGroup('episode').padLeft(8, '0')}');
+      _id = int.parse('${m.groupNames.contains('season') ? m.namedGroup('season') : '0'}0${m.namedGroup('episode').split('-').last.padLeft(8, '0')}');
       // print('$title - $id');
     }
     qualities = json['qualities']?.map((e) => Quality.fromJson(e))?.cast<Quality>()?.toList() ?? [];

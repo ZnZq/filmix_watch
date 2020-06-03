@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:filmix_watch/filmix/media/episode.dart';
 import 'package:filmix_watch/managers/history_manager.dart';
 import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/filmix/filmix.dart';
@@ -83,6 +82,8 @@ class MediaManager {
             translates = list.map((e) => MovieTranslate.fromJson(e)).toList();
             break;
           }
+        default:
+          return;
       }
       controller.add(translates);
       return;
@@ -105,6 +106,8 @@ class MediaManager {
           result = await Filmix.getMovie(post.id);
           break;
         }
+      default:
+        return;
     }
 
     if (result?.hasError ?? true) {

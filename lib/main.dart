@@ -21,6 +21,13 @@ import 'package:path_provider/path_provider.dart' as path;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // if (!kIsWeb) {
+  //   final appDir = await path.getApplicationDocumentsDirectory();
+  //   var path = appDir.path;
+  //   Hive.init(path);
+  // }
+
   final docsPath = await path.getApplicationDocumentsDirectory();
   print(docsPath);
   Hive..init(docsPath.path);

@@ -2,7 +2,7 @@ import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 
 class MirrorTile extends StatefulWidget {
   final String mirror;
@@ -44,7 +44,7 @@ class _MirrorTileState extends State<MirrorTile> {
     });
   }
 
-  static DateFormat format = DateFormat('');
+  // static DateFormat format = DateFormat('');
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,7 @@
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/tiles/poster_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+// import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class PostInfo extends StatelessWidget {
   final MediaPost post;

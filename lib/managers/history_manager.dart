@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+// import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
@@ -51,7 +52,7 @@ class HistoryManager {
 
     histories = list.map((e) => History.fromJson(e)).toList()
       ..sort(
-        (a, b) => a.date.compareTo(b.date),
+        (a, b) => b.date.compareTo(a.date),
       );
   }
 

@@ -51,7 +51,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     child: HistoryPostTile(
                       post: post,
                       historyItems: items,
-                      hero: items.last.id.toString(),
+                      hero: items.last.hashCode.toString(),
                     ),
                     onTap: () {
                       Navigator.pushNamed(context, PostPage.route, arguments: {

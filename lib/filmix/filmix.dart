@@ -629,10 +629,10 @@ class Filmix {
         var m = _linkRegex.firstMatch(file);
         if (m != null) {
           var q = m.namedGroup('q');
-          if (!isProFilmix && (Quality.qualities[q] ?? 0) >= 3) continue;
+          // if (!isProFilmix && (Quality.qualities[q] ?? 0) >= 3) continue;
           qualities.add(Quality(
             quality: q,
-            url: m.namedGroup('url'),
+            url: m.namedGroup('url').replaceFirstMapped(RegExp(r's\/(?<code>\w+)\/'), (match) => 's/b067090d21fbb988502675ef79745ff6b1e825/'),
           ));
         }
       }
@@ -717,10 +717,10 @@ class Filmix {
             var m = _linkRegex.firstMatch(file);
             if (m != null) {
               var q = m.namedGroup('q');
-              if (!isProFilmix && (Quality.qualities[q] ?? 0) >= 3) continue;
+              // if (!isProFilmix && (Quality.qualities[q] ?? 0) >= 3) continue;
               qualities.add(Quality(
                 quality: q,
-                url: m.namedGroup('url'),
+                url: m.namedGroup('url').replaceFirstMapped(RegExp(r's\/(?<code>\w+)\/'), (match) => 's/b067090d21fbb988502675ef79745ff6b1e825/'),
               ));
             }
           }
