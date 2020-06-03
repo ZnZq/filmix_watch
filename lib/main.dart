@@ -27,7 +27,7 @@ void main() async {
   //   var path = appDir.path;
   //   Hive.init(path);
   // }
-
+  
   final docsPath = await path.getApplicationDocumentsDirectory();
   print(docsPath);
   Hive..init(docsPath.path);
