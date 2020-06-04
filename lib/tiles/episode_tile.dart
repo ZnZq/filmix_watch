@@ -1,3 +1,4 @@
+import 'package:filmix_watch/filmix/media/quality.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
 import 'package:filmix_watch/managers/media_manager.dart';
 import 'package:filmix_watch/filmix/media/episode.dart';
@@ -44,18 +45,18 @@ class _EpisodeTileState extends State<EpisodeTile> {
               Icons.play_arrow,
               color: Colors.green,
             ),
-            onSelected: (link) async {
-              if (await canLaunch(link)) {
+            onSelected: (quality) async {
+              if (await canLaunch(quality.url)) {
                 _view(true);
-                launch(link);
+                launch(quality.url);
               }
             },
           ),
           _buildPopupMenu(
             text: 'Copy',
             icon: Icon(Icons.content_copy),
-            onSelected: (link) async {
-              await Clipboard.setData(ClipboardData(text: link));
+            onSelected: (quality) async {
+              await Clipboard.setData(ClipboardData(text: quality.url));
               Fluttertoast.showToast(msg: 'Скопировано');
             },
           ),
@@ -76,10 +77,10 @@ class _EpisodeTileState extends State<EpisodeTile> {
     setState(() {});
   }
 
-  PopupMenuButton<String> _buildPopupMenu({
+  PopupMenuButton<Quality> _buildPopupMenu({
     String text,
     Widget icon,
-    Function(String) onSelected,
+    Function(Quality) onSelected,
   }) {
     return PopupMenuButton(
       padding: EdgeInsets.all(0),
@@ -87,7 +88,7 @@ class _EpisodeTileState extends State<EpisodeTile> {
       itemBuilder: (context) => [
         for (var quality in widget.episode.qualities)
           PopupMenuItem(
-            value: quality.url,
+            value: quality,
             child: FutureBuilder(
               future: quality.getSize(),
               builder: (context, snapshot) {

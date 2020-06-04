@@ -1,4 +1,5 @@
 import 'package:connectivity/connectivity.dart';
+import 'package:filmix_watch/settings.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:filesize/filesize.dart';
@@ -6,6 +7,7 @@ import 'package:filesize/filesize.dart';
 class Quality extends Comparable {
   String quality;
   String url;
+  String basicCode;
   int _size;
 
   static final Connectivity _connectivity = Connectivity();
@@ -21,6 +23,7 @@ class Quality extends Comparable {
   Quality({
     this.quality = '',
     this.url = '',
+    this.basicCode = '',
   });
 
   final regexCode = RegExp(r's\/(?<code>\w+)\/');
@@ -34,21 +37,26 @@ class Quality extends Comparable {
       }
 
       if (_size == 0) {
-        var resp = await http.head(url);
-        _size = int.parse(resp?.headers['content-length'] ?? '0');
+        if (Settings.freeFullHD) {
+          var codes = [...Settings.fullHDCodes.toList(), basicCode];
 
-        if (_size == 0) {
-          var code = regexCode.firstMatch(url)?.namedGroup('code');
-          var newCode = code == 'b067090d21fbb988502675ef79745ff6b1e825'
-              ? '2e2ffdec9fd12ab24985961f88849e31410d0c'
-              : 'b067090d21fbb988502675ef79745ff6b1e825';
-          var newUrl =
-              url.replaceFirstMapped(regexCode, (match) => 's/$newCode/');
+          for (var code in codes) {
+            var newUrl =
+                url.replaceFirstMapped(regexCode, (match) => 's/$code/');
 
-          var resp = await http.head(newUrl);
+            try {
+              var resp = await http.head(newUrl);
+              _size = int.parse(resp?.headers['content-length'] ?? '0');
+
+              if (_size != 0) {
+                url = newUrl;
+                break;
+              }
+            } catch (e) {}
+          }
+        } else {
+          var resp = await http.head(url);
           _size = int.parse(resp?.headers['content-length'] ?? '0');
-
-          url = newUrl;
         }
       }
     } catch (e) {}
@@ -59,6 +67,7 @@ class Quality extends Comparable {
   Quality.fromJson(Map<String, dynamic> json) {
     quality = json['quality'] ?? '';
     url = json['url'] ?? '';
+    basicCode = json['basicCode'] ?? '';
     _size = json['size'] ?? 0;
   }
 
@@ -66,6 +75,7 @@ class Quality extends Comparable {
     return {
       'quality': quality,
       'url': url,
+      'basicCode': basicCode,
       'size': _size,
     };
   }

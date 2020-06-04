@@ -8,6 +8,8 @@ class Settings {
   static BehaviorSubject get updateController => _controller;
 
   static bool smartScroll;
+  static bool freeFullHD;
+  static Set<String> fullHDCodes;
   static bool showPostQuality,
       showPostAdded,
       showPostTime,
@@ -17,6 +19,17 @@ class Settings {
 
   Settings.fromJson(Map<String, dynamic> json) {
     smartScroll = json['smartScroll'] ?? true;
+    freeFullHD = json['freeFullHD'] ?? true;
+    if (json['fullHDCodes'] != null) {
+      fullHDCodes = Set<String>.from(jsonDecode(json['fullHDCodes']) as List);
+    } else {
+      fullHDCodes = {
+        'b067090d21fbb988502675ef79745ff6b1e825',
+        '2e2ffdec9fd12ab24985961f88849e31410d0c',
+        'b06d7340024b900c9e256ccac9ea2ca33ca7b2',
+        'b2b9545efaeaebf26e85d54c620283da1cdf2b',
+      };
+    }
     showPostQuality = json['showPostQuality'] ?? true;
     showPostAdded = json['showPostAdded'] ?? true;
     showPostTime = json['showPostTime'] ?? true;
@@ -28,6 +41,8 @@ class Settings {
   static Map<String, dynamic> toJson() {
     return {
       'smartScroll': smartScroll,
+      'freeFullHD': freeFullHD,
+      'fullHDCodes': jsonEncode(fullHDCodes.toList()),
       'showPostQuality': showPostQuality,
       'showPostAdded': showPostAdded,
       'showPostTime': showPostTime,

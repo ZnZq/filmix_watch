@@ -630,10 +630,12 @@ class Filmix {
         if (m != null) {
           var q = m.namedGroup('q');
           // if (!isProFilmix && (Quality.qualities[q] ?? 0) >= 3) continue;
+          var url = m.namedGroup('url');
           qualities.add(Quality(
             quality: q,
-            url: m.namedGroup('url').replaceFirstMapped(RegExp(r's\/(?<code>\w+)\/'), (match) => 's/b067090d21fbb988502675ef79745ff6b1e825/'),
-          ));
+            basicCode: regexCode.firstMatch(url)?.namedGroup('code'),
+            url: url,
+          )); //.replaceFirstMapped(RegExp(r's\/(?<code>\w+)\/'), (match) => 's/b067090d21fbb988502675ef79745ff6b1e825/'),
         }
       }
 
@@ -679,6 +681,8 @@ class Filmix {
     }
   }
 
+  static final regexCode = RegExp(r's\/(?<code>\w+)\/');
+
   static isolategetSerialEntry(message) async {
     ReceivePort port = ReceivePort();
     message.send(port.sendPort);
@@ -718,10 +722,12 @@ class Filmix {
             if (m != null) {
               var q = m.namedGroup('q');
               // if (!isProFilmix && (Quality.qualities[q] ?? 0) >= 3) continue;
+              var url = m.namedGroup('url');
               qualities.add(Quality(
                 quality: q,
-                url: m.namedGroup('url').replaceFirstMapped(RegExp(r's\/(?<code>\w+)\/'), (match) => 's/b067090d21fbb988502675ef79745ff6b1e825/'),
-              ));
+                basicCode: regexCode.firstMatch(url)?.namedGroup('code'),
+                url: url,
+              )); //.replaceFirstMapped(RegExp(r's\/(?<code>\w+)\/'), (match) => 's/b067090d21fbb988502675ef79745ff6b1e825/'),
             }
           }
 
