@@ -1,4 +1,5 @@
 import 'package:filmix_watch/pages/data_page.dart';
+import 'package:filmix_watch/pages/download_page.dart';
 import 'package:filmix_watch/pages/favorite_page.dart';
 import 'package:filmix_watch/pages/history_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
@@ -54,6 +55,12 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: Icons.filter_drama,
                     text: DataPage.title,
                     route: DataPage.route,
+                  ),
+                  Divider(height: 0),
+                  _buildDrawerItemPush(
+                    icon: Icons.cloud_download,
+                    text: DownloadPage.title,
+                    route: DownloadPage.route,
                   ),
                   Divider(height: 0),
                   _buildDrawerItemPush(

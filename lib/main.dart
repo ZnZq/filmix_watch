@@ -1,4 +1,5 @@
 import 'package:filmix_watch/managers/auth_manager.dart';
+import 'package:filmix_watch/managers/download_manager.dart';
 import 'package:filmix_watch/managers/favorite_manager.dart';
 import 'package:filmix_watch/managers/filter_manager.dart';
 import 'package:filmix_watch/managers/history_manager.dart';
@@ -7,6 +8,7 @@ import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:filmix_watch/managers/post_manager.dart';
 import 'package:filmix_watch/pages/auth_page.dart';
 import 'package:filmix_watch/pages/data_page.dart';
+import 'package:filmix_watch/pages/download_page.dart';
 import 'package:filmix_watch/pages/favorite_page.dart';
 import 'package:filmix_watch/pages/history_page.dart';
 import 'package:filmix_watch/pages/main_page.dart';
@@ -15,50 +17,45 @@ import 'package:filmix_watch/pages/search_page.dart';
 import 'package:filmix_watch/pages/settings_page.dart';
 import 'package:filmix_watch/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await FlutterDownloader.initialize(
+      debug: true // optional: set false to disable printing logs to console
+      );
 
   // if (!kIsWeb) {
   //   final appDir = await path.getApplicationDocumentsDirectory();
   //   var path = appDir.path;
   //   Hive.init(path);
   // }
-  
+
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.storage,
+  ].request();
+
   final docsPath = await path.getApplicationDocumentsDirectory();
   print(docsPath);
   Hive..init(docsPath.path);
 
-  runApp(
-    FutureBuilder(
-      future: Hive.openBox('filmix'),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          MirrorManager.init();
-          Settings.load();
-          PostManager.init();
-          MediaManager.init();
-          FavoriteManager.init();
-          HistoryManager.init();
-          AuthManager.init();
-          FilterManager.init();
-          return App();
-        }
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData.dark(),
-          home: Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        );
-      },
-    ),
-  );
+  await Hive.openBox('filmix');
+  MirrorManager.init();
+  Settings.load();
+  PostManager.init();
+  MediaManager.init();
+  FavoriteManager.init();
+  HistoryManager.init();
+  AuthManager.init();
+  FilterManager.init();
+  await DownloadManager.init();
+
+  runApp(App());
 }
 
 class App extends StatelessWidget {
@@ -77,6 +74,7 @@ class App extends StatelessWidget {
         AuthPage.route: (_) => AuthPage(),
         FavoritePage.route: (_) => FavoritePage(),
         HistoryPage.route: (_) => HistoryPage(),
+        DownloadPage.route: (_) => DownloadPage(),
       },
     );
   }

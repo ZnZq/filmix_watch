@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:rxdart/rxdart.dart';
@@ -16,6 +17,7 @@ class Settings {
       showPostType,
       showPostNumber,
       showPostLike;
+  static String downloadFolder;
 
   Settings.fromJson(Map<String, dynamic> json) {
     smartScroll = json['smartScroll'] ?? true;
@@ -36,6 +38,14 @@ class Settings {
     showPostType = json['showPostType'] ?? true;
     showPostNumber = json['showPostNumber'] ?? true;
     showPostLike = json['showPostLike'] ?? true;
+    downloadFolder = json['downloadFolder'];
+    if (downloadFolder == null || downloadFolder.isEmpty) {
+      downloadFolder = '/storage/emulated/0/';
+    }
+    var dir = Directory(downloadFolder);
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
   }
 
   static Map<String, dynamic> toJson() {
@@ -49,6 +59,7 @@ class Settings {
       'showPostType': showPostType,
       'showPostNumber': showPostNumber,
       'showPostLike': showPostLike,
+      'downloadFolder': downloadFolder,
     };
   }
 

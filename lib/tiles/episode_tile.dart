@@ -1,5 +1,6 @@
 import 'package:filmix_watch/filmix/media/quality.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/managers/download_manager.dart';
 import 'package:filmix_watch/managers/media_manager.dart';
 import 'package:filmix_watch/filmix/media/episode.dart';
 import 'package:filmix_watch/managers/post_manager.dart';
@@ -27,53 +28,147 @@ class _EpisodeTileState extends State<EpisodeTile> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            padding: EdgeInsets.all(0),
-            icon: Icon(
-              Icons.remove_red_eye,
-              color: MediaManager.getView(widget.post.id, widget.episode.id)
-                  ? Colors.white
-                  : Colors.white30,
-            ),
-            onPressed: () {
-              _view(!MediaManager.getView(widget.post.id, widget.episode.id));
-            },
-          ),
-          _buildPopupMenu(
-            text: 'Play',
-            icon: Icon(
-              Icons.play_arrow,
-              color: Colors.green,
-            ),
-            onSelected: (quality) async {
-              if (await canLaunch(quality.url)) {
-                _view(true);
-                launch(quality.url);
-              }
-            },
-          ),
-          _buildPopupMenu(
-            text: 'Copy',
-            icon: Icon(Icons.content_copy),
-            onSelected: (quality) async {
-              await Clipboard.setData(ClipboardData(text: quality.url));
-              Fluttertoast.showToast(msg: 'Скопировано');
-            },
+          _buildViewButton(),
+          PopupMenuButton(
+            itemBuilder: (_) => [
+              for (var quality in widget.episode.qualities)
+                PopupMenuItem(
+                  value: quality,
+                  child: FutureBuilder(
+                    future: quality.getSize(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Spacer(),
+                            _buildEpisodeQuality(quality, snapshot, context),
+                            Spacer(),
+                            _buildPlayButton(quality),
+                            _buildCopyButton(quality),
+                            _buildDownloadButton(quality),
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('${quality.quality}'),
+                          SizedBox(width: 8),
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                )
+            ],
           ),
         ],
       ),
     );
   }
 
+  IconButton _buildViewButton() {
+    return IconButton(
+      padding: EdgeInsets.all(0),
+      icon: Icon(
+        Icons.remove_red_eye,
+        color: MediaManager.getView(widget.post.id, widget.episode.id)
+            ? Colors.white
+            : Colors.white30,
+      ),
+      onPressed: () {
+        _view(!MediaManager.getView(widget.post.id, widget.episode.id));
+      },
+    );
+  }
+
+  Column _buildEpisodeQuality(
+      Quality quality, AsyncSnapshot snapshot, BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(quality.quality),
+        Text(
+          '(${snapshot.data})',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.caption.color,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlayButton(quality) {
+    return IconButton(
+      constraints: BoxConstraints(
+        minWidth: 0,
+        minHeight: 0,
+      ),
+      icon: Icon(
+        Icons.play_arrow,
+        color: Colors.green,
+      ),
+      onPressed: () async {
+        if (await canLaunch(quality.url)) {
+          _view(true);
+          launch(quality.url);
+        }
+      },
+    );
+  }
+
+  Widget _buildCopyButton(quality) {
+    return IconButton(
+      constraints: BoxConstraints(
+        minWidth: 0,
+        minHeight: 0,
+      ),
+      icon: Icon(
+        Icons.content_copy,
+        color: Colors.blue,
+      ),
+      onPressed: () async {
+        await Clipboard.setData(
+          ClipboardData(text: quality.url),
+        );
+        Fluttertoast.showToast(msg: 'Скопировано');
+      },
+    );
+  }
+
+  Widget _buildDownloadButton(Quality quality) {
+    return IconButton(
+      constraints: BoxConstraints(
+        minWidth: 0,
+        minHeight: 0,
+      ),
+      icon: Icon(
+        Icons.file_download,
+        color: Colors.orange,
+      ),
+      onPressed: () async {
+        var name = '${widget.post.name} ${widget.episode.title}.mp4';
+        await DownloadManager.download(
+          url: quality.url,
+          name: name,
+        );
+        Fluttertoast.showToast(msg: 'Загрузка: $name');
+      },
+    );
+  }
+
   void _view(bool view) {
     PostManager.saveIfNotExist(widget.post);
-    MediaManager.setView(
-      widget.post.id,
-      widget.episode.id,
-      view,
-      saveToHistory: true,
-      episodeTitle: widget.episode.title
-    );
+    MediaManager.setView(widget.post.id, widget.episode.id, view,
+        saveToHistory: true, episodeTitle: widget.episode.title);
     setState(() {});
   }
 

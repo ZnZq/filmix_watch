@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:filmix_watch/settings.dart';
 import 'package:filmix_watch/tiles/mirror_tile.dart';
@@ -19,125 +22,169 @@ class SettingsPage extends StatelessWidget {
           return ListView(
             shrinkWrap: true,
             children: [
+              _buildMainSetting(context),
+              _buildMainPageSetting(),
+              _buildPosterSetting(),
+              _buildMirrorSetting(),
               ExpansionTile(
-                title: Text('Основное'),
+                title: Text('Загрузки'),
                 children: [
-                  _switch('Обход Full HD', Settings.freeFullHD,
-                      (value) => Settings.freeFullHD = value,
-                      subtitle:
-                          'Если выключено, вам необходмо быть авторизованным, что бы смотреть в HD качестве и Full HD+ качество будет не доступно!\n\nВозможны Wrong Link. Попробуйте перезагрузить данные, если не поможет, выключите этот режим!'),
-                  if (Settings.freeFullHD)
-                    Column(
-                      children: [
-                        ConstrainedBox(
-                          constraints:
-                              BoxConstraints(maxHeight: 200, minHeight: 0),
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: Settings.fullHDCodes
-                                .map((e) => ListTile(
-                                      title: Center(
-                                        child: Text(e,
-                                            style: TextStyle(fontSize: 12)),
-                                      ),
-                                      trailing: IconButton(
-                                        icon: Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                          size: 18,
-                                        ),
-                                        onPressed: () => removeCode(context, e),
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                        ),
-                        FlatButton(
-                          child: Text('Добавить код'),
-                          onPressed: () async {
-                            var code = await showDialog<String>(
-                              context: context,
-                              builder: (context) => AddCodeDialog(),
-                            );
+                  ListTile(
+                    title: Text('Папка для загрузки'),
+                    subtitle: Text(Settings.downloadFolder),
+                    trailing: IconButton(
+                      icon: Icon(Icons.refresh),
+                      onPressed: () {
+                        Settings.downloadFolder = '/storage/emulated/0/';
+                        Settings.save();
+                      },
+                    ),
+                    onTap: () async {
+                      String path = await FilesystemPicker.open(
+                        title: 'Папка для загрузки',
+                        context: context,
+                        rootDirectory: Directory('/storage/emulated/0/'),
+                        rootName: 'Хранилище',
+                        fsType: FilesystemType.folder,
+                        pickText: 'Выбрать',
+                      );
+                      if (path == null || path.isEmpty) {
+                        return;
+                      }
 
-                            if (code != null) {
-                              Settings.fullHDCodes.add(code);
-                              Settings.save();
-                            }
-                          },
-                        )
-                      ],
-                    )
+                      Settings.downloadFolder = path;
+                      Settings.save();
+                    },
+                  )
                 ],
-              ),
-              ExpansionTile(
-                title: Text('Настройки главной страницы'),
-                children: [
-                  _switch(
-                    'Умный скролл',
-                    Settings.smartScroll,
-                    (value) => Settings.smartScroll = value,
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                title: Text('Настройки постера'),
-                children: [
-                  _switch(
-                    'Отображать качество',
-                    Settings.showPostQuality,
-                    (value) => Settings.showPostQuality = value,
-                  ),
-                  Divider(height: 0),
-                  _switch(
-                    'Отображать последнюю серию',
-                    Settings.showPostAdded,
-                    (value) => Settings.showPostAdded = value,
-                  ),
-                  Divider(height: 0),
-                  _switch(
-                    'Отображать время добавления',
-                    Settings.showPostTime,
-                    (value) => Settings.showPostTime = value,
-                  ),
-                  Divider(height: 0),
-                  _switch(
-                    'Отображать тип материала',
-                    Settings.showPostType,
-                    (value) => Settings.showPostType = value,
-                  ),
-                  Divider(height: 0),
-                  _switch(
-                    'Отображать позицию',
-                    Settings.showPostNumber,
-                    (value) => Settings.showPostNumber = value,
-                  ),
-                  Divider(height: 0),
-                  _switch(
-                    'Отображать рейтинг',
-                    Settings.showPostLike,
-                    (value) => Settings.showPostLike = value,
-                  ),
-                ],
-              ),
-              StreamBuilder(
-                stream: MirrorManager.updateController,
-                builder: (context, snapshot) {
-                  return ExpansionTile(
-                    title: Text('Зеркала'),
-                    subtitle:
-                        Text('Текущее зеркало: ${MirrorManager.currentMirror}'),
-                    children: [
-                      for (var mirror in MirrorManager.mirrors)
-                        MirrorTile(mirror)
-                    ],
-                  );
-                },
-              ),
+              )
             ],
           );
         },
       ),
+    );
+  }
+
+  StreamBuilder _buildMirrorSetting() {
+    return StreamBuilder(
+      stream: MirrorManager.updateController,
+      builder: (context, snapshot) {
+        return ExpansionTile(
+          title: Text('Зеркала'),
+          subtitle: Text('Текущее зеркало: ${MirrorManager.currentMirror}'),
+          children: [
+            for (var mirror in MirrorManager.mirrors) MirrorTile(mirror)
+          ],
+        );
+      },
+    );
+  }
+
+  ExpansionTile _buildPosterSetting() {
+    return ExpansionTile(
+      title: Text('Настройки постера'),
+      children: [
+        _switch(
+          'Отображать качество',
+          Settings.showPostQuality,
+          (value) => Settings.showPostQuality = value,
+        ),
+        Divider(height: 0),
+        _switch(
+          'Отображать последнюю серию',
+          Settings.showPostAdded,
+          (value) => Settings.showPostAdded = value,
+        ),
+        Divider(height: 0),
+        _switch(
+          'Отображать время добавления',
+          Settings.showPostTime,
+          (value) => Settings.showPostTime = value,
+        ),
+        Divider(height: 0),
+        _switch(
+          'Отображать тип материала',
+          Settings.showPostType,
+          (value) => Settings.showPostType = value,
+        ),
+        Divider(height: 0),
+        _switch(
+          'Отображать позицию',
+          Settings.showPostNumber,
+          (value) => Settings.showPostNumber = value,
+        ),
+        Divider(height: 0),
+        _switch(
+          'Отображать рейтинг',
+          Settings.showPostLike,
+          (value) => Settings.showPostLike = value,
+        ),
+      ],
+    );
+  }
+
+  ExpansionTile _buildMainPageSetting() {
+    return ExpansionTile(
+      title: Text('Настройки главной страницы'),
+      children: [
+        _switch(
+          'Умный скролл',
+          Settings.smartScroll,
+          (value) => Settings.smartScroll = value,
+        ),
+      ],
+    );
+  }
+
+  ExpansionTile _buildMainSetting(BuildContext context) {
+    return ExpansionTile(
+      title: Text('Основное'),
+      children: [
+        _switch('Обход Full HD', Settings.freeFullHD,
+            (value) => Settings.freeFullHD = value,
+            subtitle:
+                'Если выключено, вам необходмо быть авторизованным, что бы смотреть в HD качестве и Full HD+ качество будет не доступно!\n\nВозможны Wrong Link. Попробуйте перезагрузить данные, если не поможет, выключите этот режим!'),
+        if (Settings.freeFullHD)
+          Column(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 200, minHeight: 0),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: Settings.fullHDCodes
+                      .map((e) => ListTile(
+                            title: Center(
+                              child: Text(e, style: TextStyle(fontSize: 12)),
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 18,
+                              ),
+                              onPressed: () => removeCode(context, e),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ),
+              FlatButton(
+                child: Text('Добавить код'),
+                onPressed: () async {
+                  var code = await showDialog<String>(
+                    context: context,
+                    builder: (context) => AddCodeDialog(),
+                  );
+
+                  if (code != null) {
+                    Settings.fullHDCodes.add(code);
+                    Settings.save();
+                  }
+                },
+              )
+            ],
+          )
+      ],
     );
   }
 
