@@ -120,6 +120,7 @@ class _EpisodeTileState extends State<EpisodeTile> {
         if (await canLaunch(quality.url)) {
           _view(true);
           launch(quality.url);
+          Navigator.pop(context);
         }
       },
     );
@@ -140,6 +141,7 @@ class _EpisodeTileState extends State<EpisodeTile> {
           ClipboardData(text: quality.url),
         );
         Fluttertoast.showToast(msg: 'Скопировано');
+        Navigator.pop(context);
       },
     );
   }
@@ -150,17 +152,31 @@ class _EpisodeTileState extends State<EpisodeTile> {
         minWidth: 0,
         minHeight: 0,
       ),
-      icon: Icon(
-        Icons.file_download,
-        color: Colors.orange,
+      icon: Opacity(
+        opacity: DownloadManager.hasInDownloads(quality.url) ? .5 : 1,
+        child: Icon(
+          Icons.file_download,
+          color: Colors.orange,
+        ),
       ),
       onPressed: () async {
-        var name = '${widget.post.name} ${widget.episode.title}.mp4';
+        if (DownloadManager.hasInDownloads(quality.url)) {
+          Fluttertoast.showToast(
+            msg: 'Данный материал уже находиться в списке загрузок',
+          );
+          return;
+        }
+
         await DownloadManager.download(
           url: quality.url,
-          name: name,
+          name: widget.post.name,
+          episode: widget.episode.originalId,
+          quality: quality.quality,
         );
-        Fluttertoast.showToast(msg: 'Загрузка: $name');
+        Fluttertoast.showToast(
+          msg: 'Загрузка: ${widget.post.name} ${widget.episode.originalId}',
+        );
+        Navigator.pop(context);
       },
     );
   }

@@ -27,22 +27,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await FlutterDownloader.initialize(
-      debug: true // optional: set false to disable printing logs to console
-      );
-
-  // if (!kIsWeb) {
-  //   final appDir = await path.getApplicationDocumentsDirectory();
-  //   var path = appDir.path;
-  //   Hive.init(path);
-  // }
-
-  Map<Permission, PermissionStatus> statuses = await [
-    Permission.storage,
-  ].request();
+    debug: true,
+  );
 
   final docsPath = await path.getApplicationDocumentsDirectory();
   print(docsPath);
   Hive..init(docsPath.path);
+
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.storage,
+  ].request();
 
   await Hive.openBox('filmix');
   MirrorManager.init();

@@ -2,13 +2,15 @@ import 'quality.dart';
 
 class Episode {
   String title;
+  String originalId;
   int _id;
   int get id => _id;
   List<Quality> qualities;
 
   Episode({
     this.title = '',
-    this.qualities
+    this.qualities,
+    this.originalId,
   }) {
     qualities ??= [];
   }
@@ -19,6 +21,7 @@ class Episode {
 
   Episode.fromJson(Map<String, dynamic> json) {
     title = json['title'];
+    originalId = json['id'];
     // _id = title.replaceAll(_idRegex, '');
     // _id = int.parse(title.replaceAll(idRegex, '').split('').reversed.join());
     var m = idRegex.firstMatch(title);
@@ -32,6 +35,7 @@ class Episode {
   Map<String, dynamic> toJson() {
     return {
       'title': title,
+      'id': originalId,
       'qualities': qualities.map((e) => e.toJson()).toList()
     };
   }

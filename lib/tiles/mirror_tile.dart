@@ -41,6 +41,14 @@ class _MirrorTileState extends State<MirrorTile> {
         status = response.statusCode;
         loading = false;
       });
+    }).catchError((e) {
+      endTime = DateTime.now();
+      setState(() {
+        state = false;
+        status = -1;
+        loading = false;
+      });
+      return null;
     });
   }
 

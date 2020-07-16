@@ -1,10 +1,11 @@
 import 'dart:io';
 
-import 'package:filesystem_picker/filesystem_picker.dart';
+// import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:filmix_watch/managers/mirror_manager.dart';
 import 'package:filmix_watch/settings.dart';
 import 'package:filmix_watch/tiles/mirror_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
 class SettingsPage extends StatelessWidget {
   static final String route = '/settings';
@@ -40,14 +41,15 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     onTap: () async {
-                      String path = await FilesystemPicker.open(
-                        title: 'Папка для загрузки',
-                        context: context,
-                        rootDirectory: Directory('/storage/emulated/0/'),
-                        rootName: 'Хранилище',
-                        fsType: FilesystemType.folder,
-                        pickText: 'Выбрать',
-                      );
+                      var path = await FilePicker.getDirectoryPath();
+                      // String path = await FilesystemPicker.open(
+                      //   title: 'Папка для загрузки',
+                      //   context: context,
+                      //   rootDirectory: Directory('/storage/emulated/0/'),
+                      //   rootName: 'Хранилище',
+                      //   fsType: FilesystemType.folder,
+                      //   pickText: 'Выбрать',
+                      // );
                       if (path == null || path.isEmpty) {
                         return;
                       }

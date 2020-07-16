@@ -714,6 +714,7 @@ class Filmix {
         var episodes = <Episode>[];
         for (var episodeMap in seasonMap['folder']) {
           var episodeTitle = episodeMap['title'];
+          var episodeId = episodeMap['id'];
           var episodeFiles = episodeMap['file'].split(',');
           var qualities = <Quality>[];
 
@@ -733,7 +734,11 @@ class Filmix {
 
           qualities.sort((a, b) => a.compareTo(b));
 
-          episodes.add(Episode(title: episodeTitle, qualities: qualities));
+          episodes.add(Episode(
+            title: episodeTitle,
+            qualities: qualities,
+            originalId: episodeId,
+          ));
         }
         seasons.add(Season(title: seasonTitle, episodes: episodes));
       }

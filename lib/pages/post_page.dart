@@ -1,5 +1,6 @@
 import 'package:filmix_watch/managers/media_manager.dart';
 import 'package:filmix_watch/filmix/media_post.dart';
+import 'package:filmix_watch/pages/download_page.dart';
 import 'package:filmix_watch/widgets/media_view.dart';
 import 'package:filmix_watch/widgets/post_info.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,9 @@ class PostPage extends StatelessWidget {
               ),
             ),
             body: Center(
-              child: snapshot.hasData ? Text('Ошибка загрузки данных') : CircularProgressIndicator(),
+              child: snapshot.hasData
+                  ? Text('Ошибка загрузки данных')
+                  : CircularProgressIndicator(),
             ),
           );
         }
@@ -51,6 +54,12 @@ class PostPage extends StatelessWidget {
                 ),
               ),
               actions: [
+                IconButton(
+                  icon: Icon(Icons.file_download),
+                  onPressed: () {
+                    Navigator.pushNamed(context, DownloadPage.route);
+                  },
+                ),
                 StreamBuilder(
                   stream: bloc.controller,
                   initialData: bloc.controller.value,
