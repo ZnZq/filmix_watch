@@ -579,7 +579,7 @@ class Filmix {
   }
 
   static final _linkRegex =
-      RegExp(r'\[(?<q>\d+K{0,}(p|\sU{0,1}HD|))\](?<url>https.*\.mp4)');
+      RegExp(r'\[(?<q>\d+K{0,}(p|\sU{0,1}HD|))\](?<url>https.*\.mp4.*)');
 
   static Future<Result<Map>> _getData(int id) async {
     try {

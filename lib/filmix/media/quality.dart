@@ -28,6 +28,9 @@ class Quality extends Comparable {
 
   final regexCode = RegExp(r's\/(?<code>\w+)\/');
 
+  clearSize() => _size = 0;
+  get size => _size;
+
   Future<String> getSize() async {
     try {
       var status = await _connectivity.checkConnectivity();
@@ -46,17 +49,21 @@ class Quality extends Comparable {
 
             try {
               var resp = await http.head(newUrl);
-              _size = int.parse(resp?.headers['content-length'] ?? '0');
+              if (resp.statusCode == 200) {
+                _size = int.parse(resp?.headers['content-length'] ?? '0');
 
-              if (_size != 0) {
-                url = newUrl;
-                break;
+                if (_size != 0) {
+                  url = newUrl;
+                  break;
+                }
               }
             } catch (e) {}
           }
         } else {
           var resp = await http.head(url);
-          _size = int.parse(resp?.headers['content-length'] ?? '0');
+          if (resp.statusCode == 200) {
+            _size = int.parse(resp?.headers['content-length'] ?? '0');
+          }
         }
       }
     } catch (e) {}

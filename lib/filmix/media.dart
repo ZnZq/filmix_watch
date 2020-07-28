@@ -14,6 +14,13 @@ class Media {
   Future<String> init() async {
     url = PlayerJS.trim(url);
 
+    // if (url.endsWith('.txt')) {
+    //   var resp = await http.get(url);
+    //   if (resp.statusCode == 200) {
+    //     url = resp.body;
+    //   }
+    // }
+
     if (url.indexOf('#2') == 0) {
       url = PlayerJS.fd2(url);
     }
